@@ -277,62 +277,98 @@
   .nav-cta::after { display: none; }
   .menu-toggle { display: none; background: none; border: none; cursor: pointer; }
 
-  /* ───── HERO ───── */
+  /* ───── HERO SLIDER ───── */
   #home {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
     position: relative;
+    height: 100vh;
+    min-height: 620px;
     overflow: hidden;
   }
-  .hero-bg {
+
+  /* Slider container */
+  .hero-slider {
     position: absolute;
     inset: 0;
     z-index: 0;
   }
-  .hero-bg-grid {
+
+  /* Individual slides */
+  .hero-slide {
     position: absolute;
     inset: 0;
-    background-image:
-      linear-gradient(rgba(10,78,255,0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(10,78,255,0.06) 1px, transparent 1px);
-    background-size: 60px 60px;
+    opacity: 0;
+    transition: opacity 1s ease;
   }
-  .hero-bg-gradient {
+  .hero-slide.active { opacity: 1; }
+
+  /* Background image — Ken Burns */
+  .hero-slide-img {
+    position: absolute;
+    inset: -6%;
+    background-size: cover;
+    background-position: center;
+    will-change: transform;
+  }
+  .hero-slide.active .hero-slide-img {
+    animation: kenBurnsA 9s ease-out forwards;
+  }
+  .hero-slide:nth-child(even).active .hero-slide-img {
+    animation: kenBurnsB 9s ease-out forwards;
+  }
+  @keyframes kenBurnsA {
+    0%   { transform: scale(1.1) translateX(0)    translateY(0); }
+    100% { transform: scale(1.0) translateX(-1.5%) translateY(-0.5%); }
+  }
+  @keyframes kenBurnsB {
+    0%   { transform: scale(1.1) translateX(0)    translateY(0); }
+    100% { transform: scale(1.0) translateX(1.5%)  translateY(0.5%); }
+  }
+
+  /* Dark overlay — heavier on left for text legibility */
+  .hero-slide-overlay {
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 800px 600px at 70% 50%, rgba(10,78,255,0.12) 0%, transparent 70%),
-      radial-gradient(ellipse 500px 500px at 20% 80%, rgba(245,101,0,0.08) 0%, transparent 60%),
-      linear-gradient(180deg, var(--dark) 0%, var(--dark-2) 100%);
+      linear-gradient(105deg, rgba(8,12,18,0.88) 0%, rgba(8,12,18,0.55) 55%, rgba(8,12,18,0.15) 100%),
+      linear-gradient(to top, rgba(8,12,18,0.7) 0%, transparent 45%);
   }
-  .hero-line-left {
+
+  /* Accent side stripe */
+  .hero-slide-stripe {
     position: absolute;
     left: 0;
     top: 0;
     bottom: 0;
     width: 4px;
-    background: linear-gradient(180deg, transparent, var(--orange), var(--blue), transparent);
+    background: linear-gradient(180deg, transparent 0%, var(--orange) 30%, var(--blue) 70%, transparent 100%);
+    z-index: 2;
   }
-  .hero-content {
-    position: relative;
-    z-index: 1;
+
+  /* ── Text layers (per-slide animated) ── */
+  .hero-slide-text {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 24px 110px;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 120px 24px 80px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    align-items: center;
+    left: 0; right: 0;
+    pointer-events: none;
   }
+  .hero-slide-text.active { pointer-events: auto; }
+
+  /* Badge */
   .hero-badge {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    background: rgba(10,78,255,0.1);
-    border: 1px solid rgba(10,78,255,0.3);
+    background: rgba(10,78,255,0.12);
+    border: 1px solid rgba(10,78,255,0.35);
     padding: 8px 18px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     font-family: var(--font-accent);
     font-size: 12px;
     font-weight: 600;
@@ -340,48 +376,82 @@
     color: var(--blue-light);
     text-transform: uppercase;
     clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    width: fit-content;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s;
   }
   .hero-badge-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
+    width: 6px; height: 6px; border-radius: 50%;
     background: var(--blue-light);
-    animation: pulse 2s infinite;
+    flex-shrink: 0;
   }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
+  @keyframes pulseDot {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.4; transform: scale(0.7); }
   }
+  .hero-slide-text.active .hero-badge-dot { animation: pulseDot 2s infinite; }
+  .hero-slide-text.active .hero-badge {
+    opacity: 1; transform: translateY(0);
+  }
+
+  /* Title */
   .hero-title {
     font-family: var(--font-display);
-    font-size: clamp(48px, 6vw, 80px);
+    font-size: clamp(46px, 6.5vw, 84px);
     font-weight: 900;
-    line-height: 0.95;
+    line-height: 0.93;
     text-transform: uppercase;
     letter-spacing: -1px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.55s ease 0.22s, transform 0.55s ease 0.22s;
   }
+  .hero-slide-text.active .hero-title  { opacity: 1; transform: translateY(0); }
   .hero-title .accent { color: var(--orange); display: block; }
-  .hero-title .blue { color: var(--blue-light); display: block; }
+  .hero-title .blue   { color: var(--blue-light); display: block; }
+
+  /* Description */
   .hero-description {
-    font-size: 16px;
-    line-height: 1.7;
-    color: var(--gray);
+    font-size: 15px;
+    line-height: 1.75;
+    color: rgba(232,237,245,0.78);
     max-width: 500px;
-    margin-bottom: 40px;
-    font-weight: 400;
+    margin-bottom: 34px;
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.55s ease 0.34s, transform 0.55s ease 0.34s;
   }
-  .hero-cta-group { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .hero-slide-text.active .hero-description { opacity: 1; transform: translateY(0); }
+
+  /* CTA group */
+  .hero-cta-group {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 44px;
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.5s ease 0.44s, transform 0.5s ease 0.44s;
+  }
+  .hero-slide-text.active .hero-cta-group { opacity: 1; transform: translateY(0); }
+
+  /* Stats row */
   .hero-stats {
     display: flex;
-    gap: 40px;
-    margin-top: 60px;
-    padding-top: 40px;
-    border-top: 1px solid rgba(255,255,255,0.08);
+    gap: 36px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease 0.54s, transform 0.5s ease 0.54s;
   }
+  .hero-slide-text.active .hero-stats { opacity: 1; transform: translateY(0); }
   .hero-stat-num {
     font-family: var(--font-display);
-    font-size: 42px;
+    font-size: 38px;
     font-weight: 900;
     color: var(--orange);
     line-height: 1;
@@ -395,88 +465,109 @@
     text-transform: uppercase;
     margin-top: 4px;
   }
-  .hero-visual {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
 
-  /* 🔥 centrado real */
-  width: 100%;
-  height: 100%;
-}
-  
-.hero-visual-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(10,78,255,0.25);
-  animation: spinRing 24s linear infinite;
-}
-
-.hero-visual-ring:nth-child(1) {
-  width: 380px;
-  height: 380px;
-}
-
-.hero-visual-ring:nth-child(2) {
-  width: 300px;
-  height: 300px;
-  border-color: rgba(245,101,0,0.15);
-  animation-direction: reverse;
-  animation-duration: 18s;
-}
-  
-.hero-visual-ring::after {
-  content: "";
-  position: absolute;
-  inset: -8px;
-  border-radius: 50%;
-
-  border: 1px dashed rgba(255, 255, 255, 0.12);
-
-  /* doble glow */
-  box-shadow:
-    0 0 20px rgba(10, 78, 255, 0.35),
-    0 0 40px rgba(245, 101, 0, 0.15),
-    inset 0 0 10px rgba(255,255,255,0.06);
-
-  /* rotación más lenta para contraste */
-  animation: rotate 30s linear infinite;
-
-  opacity: 0.9;
-}
-
-.hero-visual-ring:nth-child(2) {
-  width: 320px;
-  height: 320px;
-  border-color: rgba(245, 102, 0, 0.6);
-
-  box-shadow:
-    0 0 20px rgba(245,101,0,0.4),
-    inset 0 0 20px rgba(245,101,0,0.2);
-
-  animation-direction: reverse;
-  animation-duration: 15s;
-}
-  @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  
-  .hero-logo-main {
-  width: 320px;
-  height: auto;
-  object-fit: contain;
-  display: block;
-
-  filter:
-    drop-shadow(0 0 30px rgba(10,78,255,0.45))
-    drop-shadow(0 0 60px rgba(245,101,0,0.25));
-
-  animation: floatLogo 5s ease-in-out infinite;
-}
- 
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-12px); }
+  /* ── Navigation arrows (right side) ── */
+  .hero-arrows {
+    position: absolute;
+    z-index: 20;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
+  .hero-arrow {
+    width: 44px; height: 44px;
+    background: rgba(8,12,18,0.5);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--white);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.3s, border-color 0.3s;
+    clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+  }
+  .hero-arrow:hover {
+    background: rgba(245,101,0,0.25);
+    border-color: rgba(245,101,0,0.5);
+  }
+
+  /* ── Dot indicators ── */
+  .hero-dots {
+    position: absolute;
+    z-index: 20;
+    bottom: 64px;
+    right: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  .hero-dot {
+    width: 6px; height: 6px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.3);
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    transition: background 0.3s, transform 0.3s, height 0.3s;
+  }
+  .hero-dot.active {
+    background: var(--orange);
+    height: 20px;
+    transform: none;
+  }
+
+  /* ── Slide counter ── */
+  .hero-counter {
+    position: absolute;
+    z-index: 20;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: rgba(255,255,255,0.35);
+    white-space: nowrap;
+  }
+  .hero-counter em { color: var(--orange); font-style: normal; }
+
+  /* ── Progress bar ── */
+  .hero-progress-wrap {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    z-index: 20;
+    overflow: hidden;
+  }
+  .hero-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--orange), var(--blue-light));
+    will-change: width;
+  }
+
+  /* ── Slide label tag (top right) ── */
+  .hero-slide-label {
+    position: absolute;
+    top: 110px;
+    right: 80px;
+    font-family: var(--font-accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    z-index: 15;
+    opacity: 0;
+    transition: opacity 0.6s ease 0.2s;
+    white-space: nowrap;
+  }
+  .hero-slide.active .hero-slide-label { opacity: 1; }
 
   /* ───── SERVICES STRIP ───── */
   .services-strip {
@@ -1246,10 +1337,29 @@
   /* ===== CLIENTES LOGOS ===== */
 
 .client-logo-item img {
-  height: 42px;
-  opacity: 0.5;
-  filter: grayscale(100%) brightness(0.8);
+  height: 65px;
+  max-width: 140px;
+  object-fit: contain;
+
+  opacity: 1;
+
+  filter: none
+    grayscale(100%)
+    brightness(1.2)
+    contrast(1.1);
+
   transition: all 0.4s ease;
+}
+
+.client-logo-item:hover img {
+  opacity: 1;
+  transform: scale(1.15);
+
+  filter:
+    grayscale(0%)
+    brightness(1.2)
+    drop-shadow(0 0 12px rgba(10,78,255,0.5))
+    drop-shadow(0 0 20px rgba(245,101,0,0.4));
 }
 
 /* hover premium */
@@ -1441,15 +1551,9 @@
 
   /* ───── RESPONSIVE ───── */
   @media (max-width: 1024px) {
-    .hero-content { grid-template-columns: 1fr; text-align: center; }
-    .hero-description { margin: 0 auto 40px; }
-    .hero-cta-group { justify-content: center; }
-    .hero-stats { justify-content: center; }
-    .hero-visual {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 30px;}
+    .hero-slide-text { padding-bottom: 90px; }
+    .hero-arrows { right: 12px; }
+    .hero-dots { right: 16px; bottom: 56px; }
     .services-grid { grid-template-columns: repeat(2, 1fr); }
     .service-featured { grid-column: span 2; grid-template-columns: 1fr; }
     .service-featured-right { grid-template-columns: repeat(3, 1fr); }
@@ -1458,19 +1562,11 @@
     .testi-grid { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 768px) {
-    .hero-logo-main {
-  width: 220px;
-}
-
-.hero-visual-ring {
-  width: 260px;
-  height: 260px;
-}
-
-.hero-visual-ring:nth-child(2) {
-  width: 200px;
-  height: 200px;
-}
+    .hero-stats { flex-wrap: wrap; gap: 20px; }
+    .hero-title { font-size: clamp(38px, 9vw, 58px); }
+    .hero-description { font-size: 14px; }
+    .hero-slide-label { display: none; }
+    .hero-arrows { display: none; }
     .nav-links { display: none; }
     .menu-toggle { display: flex; flex-direction: column; gap: 5px; }
     .menu-toggle span { width: 24px; height: 2px; background: var(--white); transition: all 0.3s; display: block; }
@@ -1487,17 +1583,7 @@
     .pillar-grid { grid-template-columns: 1fr; }
     .form-row { grid-template-columns: 1fr; }
     .coverage-grid { grid-template-columns: 1fr; }
-    .hero-stats { flex-wrap: wrap; }
-  }
-
-  @keyframes floatLogo {
-  0%,100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-.hero-logo-main {
-  animation: floatLogo 4s ease-in-out infinite;
-}
+    /* (hero-stats flex-wrap moved to 768px block above) */
 
   /* ───── MOBILE MENU ───── */
   .mobile-menu {
@@ -1594,6 +1680,7 @@
       <a href="#emergencias">Emergencias</a>
       <a href="#galeria">Galería</a>
       <a href="#testimonios">Testimonios</a>
+      <a href="#galeria" style="color:var(--orange)!important;">Tienda</a>
       <a href="#contacto" class="nav-cta">Contacto</a>
     </div>
     <button class="menu-toggle" id="menuToggle" aria-label="Menú">
@@ -1608,121 +1695,192 @@
   <a href="#emergencias">Emergencias</a>
   <a href="#galeria">Galería</a>
   <a href="#testimonios">Testimonios</a>
+  <a href="#galeria" style="color:var(--orange);">🛒 Tienda</a>
   <a href="#contacto">Contacto</a>
 </div>
 
-<!-- HERO -->
+<!-- HERO SLIDER -->
 <section id="home">
-  <div class="hero-bg">
-    <div class="hero-bg-gradient"></div>
-    <div class="hero-bg-grid"></div>
-    <div class="hero-line-left"></div>
-  </div>
-  <div class="hero-content">
-    <div class="hero-text">
-      <div class="hero-badge">
-        <div class="hero-badge-dot"></div>
-        Especializados en Panamá
+
+  <!-- ── SLIDES ──────────────────────────────────────── -->
+  <!-- 💡 Reemplaza las URLs de background-image con tus fotos reales en img/ -->
+  <div class="hero-slider" id="heroSlider">
+
+    <!-- SLIDE 1 -->
+    <div class="hero-slide active" data-index="0">
+      <div class="hero-slide-img" style="background-image:url('https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1920&q=85&auto=format&fit=crop');"></div>
+      <div class="hero-slide-overlay"></div>
+      <div class="hero-slide-stripe"></div>
+      <div class="hero-slide-label">Diagnóstico Eléctrico — Panamá</div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="hero-slide" data-index="1">
+      <div class="hero-slide-img" style="background-image:url('https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1920&q=85&auto=format&fit=crop');"></div>
+      <div class="hero-slide-overlay"></div>
+      <div class="hero-slide-stripe"></div>
+      <div class="hero-slide-label">Taller Especializado</div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="hero-slide" data-index="2">
+      <div class="hero-slide-img" style="background-image:url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=85&auto=format&fit=crop');"></div>
+      <div class="hero-slide-overlay"></div>
+      <div class="hero-slide-stripe"></div>
+      <div class="hero-slide-label">Reparación & Repuestos</div>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="hero-slide" data-index="3">
+      <div class="hero-slide-img" style="background-image:url('https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=1920&q=85&auto=format&fit=crop');"></div>
+      <div class="hero-slide-overlay"></div>
+      <div class="hero-slide-stripe"></div>
+      <div class="hero-slide-label">Servicio a Domicilio 24/7</div>
+    </div>
+
+    <!-- SLIDE 5 -->
+    <div class="hero-slide" data-index="4">
+      <div class="hero-slide-img" style="background-image:url('https://images.unsplash.com/photo-1596742578443-7682ef5251cd?w=1920&q=85&auto=format&fit=crop');"></div>
+      <div class="hero-slide-overlay"></div>
+      <div class="hero-slide-stripe"></div>
+      <div class="hero-slide-label">Sistemas Eléctricos Automotrices</div>
+    </div>
+
+  </div><!-- /hero-slider -->
+
+  <!-- ── TEXT LAYER (compartido, se re-anima en cada cambio) ── -->
+  <div class="hero-slide-text active" id="heroText">
+    <div class="hero-badge">
+      <div class="hero-badge-dot"></div>
+      Especializados en Panamá
+    </div>
+    <h1 class="hero-title">
+      <span>Especialistas</span>
+      <span class="accent">Eléctricos</span>
+      <span class="blue">Automotrices</span>
+    </h1>
+    <p class="hero-description">
+      IMPEL Electromecánica ofrece diagnóstico, reparación y mantenimiento de sistemas eléctricos automotrices con precisión profesional. Soluciones rápidas y confiables en taller y a domicilio en toda la Ciudad de Panamá.
+    </p>
+    <div class="hero-cta-group">
+      <a href="https://wa.me/50762838021?text=Hola%20IMPEL,%20necesito%20un%20diagnóstico" target="_blank" rel="noopener" class="btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+        Solicitar Diagnóstico
+      </a>
+      <a href="#servicios" class="btn-secondary">Ver Servicios</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-num">4500+</div>
+        <div class="hero-stat-label">Vehículos Atendidos</div>
       </div>
-      <h1 class="hero-title">
-        <span>Especialistas</span>
-        <span class="accent">Eléctricos</span>
-        <span class="blue">Automotrices</span>
-      </h1>
-      <p class="hero-description">
-        IMPEL Electromecánica ofrece diagnóstico, reparación y mantenimiento de sistemas eléctricos automotrices con precisión profesional. Soluciones rápidas y confiables en taller y a domicilio en toda la Ciudad de Panamá.
-      </p>
-      <div class="hero-cta-group">
-        <a href="https://wa.me/50762838021?text=Hola%20IMPEL,%20necesito%20un%20diagnóstico" target="_blank" class="btn-primary">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-          Solicitar Diagnóstico
-        </a>
-        <a href="#servicios" class="btn-secondary">Ver Servicios</a>
+      <div>
+        <div class="hero-stat-num">12+</div>
+        <div class="hero-stat-label">Años de Experiencia</div>
       </div>
-      <div class="hero-stats">
-        <div>
-          <div class="hero-stat-num">4500+</div>
-          <div class="hero-stat-label">Vehículos Atendidos</div>
-        </div>
-        <div>
-          <div class="hero-stat-num">12+</div>
-          <div class="hero-stat-label">Años de Experiencia</div>
-        </div>
-        <div>
-          <div class="hero-stat-num">24/7</div>
-          <div class="hero-stat-label">Servicio a Domilicio</div>
-        </div>
+      <div>
+        <div class="hero-stat-num">24/7</div>
+        <div class="hero-stat-label">Servicio a Domicilio</div>
       </div>
     </div>
-    <div class="hero-visual">
-      <div class="hero-visual-ring"></div>
-      <div class="hero-visual-ring"></div>
-      <!-- IMPEL main logo visual SVG -->
-      <img src="logo.png" class="hero-logo-main" alt="IMPEL Logo">
-        <defs>
-          <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#F56500;stop-opacity:1"/>
-            <stop offset="100%" style="stop-color:#C04E00;stop-opacity:1"/>
-          </linearGradient>
-          <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#1A6AFF;stop-opacity:1"/>
-            <stop offset="100%" style="stop-color:#0033CC;stop-opacity:1"/>
-          </linearGradient>
-          <linearGradient id="shimmer" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style="stop-color:rgba(255,255,255,0.0)"/>
-            <stop offset="50%" style="stop-color:rgba(255,255,255,0.15)"/>
-            <stop offset="100%" style="stop-color:rgba(255,255,255,0.0)"/>
-          </linearGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-        <!-- Outer ring -->
-        <circle cx="140" cy="130" r="120" fill="none" stroke="rgba(245,101,0,0.15)" stroke-width="1"/>
-        <circle cx="140" cy="130" r="100" fill="none" stroke="rgba(10,78,255,0.1)" stroke-width="1"/>
-        <!-- Left panel (orange) -->
-        <rect x="50" y="60" width="60" height="140" rx="4" fill="url(#bg1)"/>
-        <rect x="50" y="60" width="60" height="140" rx="4" fill="url(#shimmer)"/>
-        <!-- Right panel (orange) -->
-        <rect x="170" y="60" width="60" height="140" rx="4" fill="url(#bg1)"/>
-        <rect x="170" y="60" width="60" height="140" rx="4" fill="url(#shimmer)"/>
-        <!-- Center panel (blue) -->
-        <rect x="115" y="50" width="50" height="160" rx="4" fill="url(#bg2)"/>
-        <rect x="115" y="50" width="50" height="160" rx="4" fill="url(#shimmer)"/>
-        <!-- Car silhouette (white) -->
-        <g filter="url(#glow)">
-          <path d="M122 118 C122 118 126 103 140 103 C154 103 158 118 158 118 L164 120 L164 138 L116 138 L116 120 Z" fill="white" opacity="0.95"/>
-          <ellipse cx="125" cy="138" rx="7" ry="7" fill="#222" stroke="white" stroke-width="1.5"/>
-          <ellipse cx="155" cy="138" rx="7" ry="7" fill="#222" stroke="white" stroke-width="1.5"/>
-          <!-- Headlight glow -->
-          <ellipse cx="127" cy="117" rx="4" ry="3" fill="#0A4EFF" opacity="0.9"/>
-          <ellipse cx="153" cy="117" rx="4" ry="3" fill="#0A4EFF" opacity="0.9"/>
-        </g>
-        <!-- Spark plug left -->
-        <g transform="translate(55,85)">
-          <rect x="12" y="0" width="10" height="5" rx="1" fill="white" opacity="0.9"/>
-          <rect x="10" y="5" width="14" height="30" rx="2" fill="white" opacity="0.85"/>
-          <rect x="8" y="35" width="18" height="8" rx="1" fill="rgba(245,101,0,0.6)"/>
-          <rect x="13" y="43" width="8" height="12" rx="1" fill="white" opacity="0.7"/>
-          <line x1="17" y1="55" x2="17" y2="62" stroke="#F56500" stroke-width="2" stroke-linecap="round"/>
-        </g>
-        <!-- Alternator right -->
-        <g transform="translate(178,85)">
-          <circle cx="16" cy="20" r="18" fill="none" stroke="white" stroke-width="3" opacity="0.8"/>
-          <circle cx="16" cy="20" r="10" fill="rgba(245,101,0,0.4)" stroke="white" stroke-width="1.5" opacity="0.9"/>
-          <rect x="0" y="38" width="32" height="6" rx="1" fill="white" opacity="0.6"/>
-          <rect x="4" y="44" width="24" height="16" rx="2" fill="white" opacity="0.7"/>
-          <rect x="8" y="46" width="5" height="12" rx="1" fill="#F56500" opacity="0.8"/>
-          <rect x="15" y="46" width="5" height="12" rx="1" fill="#F56500" opacity="0.8"/>
-        </g>
-        <!-- Bottom label area -->
-        <rect x="60" y="212" width="160" height="32" rx="3" fill="rgba(0,0,0,0.5)"/>
-        <text x="140" y="233" text-anchor="middle" font-family="'Barlow Condensed', sans-serif" font-size="16" font-weight="" fill="white" letter-spacing="3"></text>
-      </svg>
-    </div>
   </div>
+
+  <!-- ── Navigation arrows ── -->
+  <div class="hero-arrows">
+    <button class="hero-arrow" id="heroPrev" aria-label="Slide anterior">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="hero-arrow" id="heroNext" aria-label="Siguiente slide">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+
+  <!-- ── Dots ── -->
+  <div class="hero-dots" id="heroDots">
+    <button class="hero-dot active" data-i="0" aria-label="Slide 1"></button>
+    <button class="hero-dot" data-i="1" aria-label="Slide 2"></button>
+    <button class="hero-dot" data-i="2" aria-label="Slide 3"></button>
+    <button class="hero-dot" data-i="3" aria-label="Slide 4"></button>
+    <button class="hero-dot" data-i="4" aria-label="Slide 5"></button>
+  </div>
+
+  <!-- ── Counter ── -->
+  <div class="hero-counter" id="heroCounter"><em>01</em> / 05</div>
+
+  <!-- ── Progress bar ── -->
+  <div class="hero-progress-wrap">
+    <div class="hero-progress-bar" id="heroProgress"></div>
+  </div>
+
 </section>
+
+<script>
+// ══════════════════════════════════════════
+//  HERO SLIDER — IMPEL Electromecánica
+// ══════════════════════════════════════════
+(function () {
+  const DURATION = 6000;
+  const slides   = document.querySelectorAll('.hero-slide');
+  const dots     = document.querySelectorAll('.hero-dot');
+  const text     = document.getElementById('heroText');
+  const counter  = document.getElementById('heroCounter');
+  const bar      = document.getElementById('heroProgress');
+  let current    = 0;
+  let timer      = null;
+
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  function goTo(idx) {
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    text.classList.remove('active');
+
+    current = ((idx % slides.length) + slides.length) % slides.length;
+
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+    counter.innerHTML = '<em>' + pad(current + 1) + '</em> / ' + pad(slides.length);
+
+    // Re-trigger text animation
+    requestAnimationFrame(() => requestAnimationFrame(() => text.classList.add('active')));
+
+    // Progress bar
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      bar.style.transition = 'width ' + DURATION + 'ms linear';
+      bar.style.width = '100%';
+    }));
+  }
+
+  function startAuto() {
+    clearInterval(timer);
+    timer = setInterval(() => goTo(current + 1), DURATION);
+  }
+
+  // Init
+  goTo(0);
+  startAuto();
+
+  document.getElementById('heroNext').addEventListener('click', () => { goTo(current + 1); startAuto(); });
+  document.getElementById('heroPrev').addEventListener('click', () => { goTo(current - 1); startAuto(); });
+
+  dots.forEach(d => d.addEventListener('click', () => { goTo(+d.dataset.i); startAuto(); }));
+
+  // Pause on hover
+  const section = document.getElementById('home');
+  section.addEventListener('mouseenter', () => clearInterval(timer));
+  section.addEventListener('mouseleave', () => startAuto());
+
+  // Touch swipe
+  let tx = 0;
+  section.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  section.addEventListener('touchend',   e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 50) { goTo(current + (dx < 0 ? 1 : -1)); startAuto(); }
+  }, { passive: true });
+})();
+</script>
 
 <!-- SCROLLING STRIP -->
 <div class="services-strip" aria-hidden="true">
@@ -2196,196 +2354,474 @@
   </div>
 </section>
 
-<!-- ADVANTAGES -->
-<section id="ventajas">
-  <div class="container">
-    <div class="fade-in" style="text-align:center;max-width:600px;margin:0 auto 0;">
-      <div class="section-label" style="justify-content:center;">Por Qué Elegirnos</div>
-      <h2 class="section-title">Ventajas <span>Competitivas</span></h2>
-      <div class="divider" style="margin:20px auto 0;"></div>
-    </div>
-    <div class="adv-grid fade-in">
-      <div class="adv-card">
-        <div class="adv-num">01</div>
-        <div class="adv-icon">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0A4EFF" stroke-width="1.8" stroke-linecap="round"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
-        </div>
-        <div class="adv-title">Diagnóstico Profesional</div>
-        <div class="adv-text">Equipos de diagnóstico de última generación para identificar fallas con precisión milimétrica antes de intervenir.</div>
-      </div>
-      <div class="adv-card">
-        <div class="adv-num">02</div>
-        <div class="adv-icon">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0A4EFF" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <div class="adv-title">Garantía Total</div>
-        <div class="adv-text">Todos nuestros trabajos incluyen garantía. Si la falla regresa dentro del período, la reparamos sin costo adicional.</div>
-      </div>
-      <div class="adv-card">
-        <div class="adv-num">03</div>
-        <div class="adv-icon">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0A4EFF" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-        </div>
-        <div class="adv-title">Entrega Rápida</div>
-        <div class="adv-text">Respetamos tu tiempo. La mayoría de reparaciones se completan el mismo día, minimizando el tiempo sin tu vehículo.</div>
-      </div>
-      <div class="adv-card">
-        <div class="adv-num">04</div>
-        <div class="adv-icon">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0A4EFF" stroke-width="1.8" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-        </div>
-        <div class="adv-title">Técnicos Certificados</div>
-        <div class="adv-text">Nuestro equipo cuenta con certificaciones técnicas y capacitación continua en sistemas eléctricos automotrices modernos.</div>
-      </div>
-    </div>
-  </div>
-</section>
+<!-- ADVANTAGES SECTION REMOVED -->
 
 <!-- GALLERY -->
 <section id="galeria">
   <div class="container">
-    <div class="fade-in" style="text-align:center;max-width:600px;margin:0 auto;">
-      <div class="section-label" style="justify-content:center;">Trabajos Realizados</div>
-      <h2 class="section-title">Galería de <span>Proyectos</span></h2>
-      <div class="divider" style="margin:20px auto 0;"></div>
+    <div class="fade-in" style="text-align:center;max-width:660px;margin:0 auto 50px;">
+      <div class="section-label" style="justify-content:center;">Repuestos & Servicios</div>
+      <h2 class="section-title">Nuestra <span>Tienda</span></h2>
+      <div class="divider" style="margin:20px auto;"></div>
+      <p style="color:var(--gray);font-size:15px;line-height:1.7;">Selecciona los repuestos o servicios que necesitas. Nuestro asistente con IA preparará tu pedido y lo enviará directamente a WhatsApp.</p>
+      <div style="display:inline-flex;align-items:center;gap:8px;margin-top:16px;background:rgba(10,78,255,0.08);border:1px solid rgba(10,78,255,0.15);padding:8px 18px;border-radius:20px;font-family:var(--font-accent);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--blue-light);">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+        Asistente IA incluido — Pedidos instantáneos vía WhatsApp
+      </div>
     </div>
-    <div class="gallery-grid fade-in">
 
-      <!-- Large feature item -->
-      <div class="gallery-item" style="min-height:360px;">
-        <div class="gallery-svg-wrap">
-          <svg viewBox="0 0 300 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
-            <defs>
-              <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#162234"/>
-                <stop offset="100%" style="stop-color:#0D1420"/>
-              </linearGradient>
-            </defs>
-            <rect width="300" height="360" fill="url(#g1)"/>
-            <!-- Alternator detailed SVG -->
-            <circle cx="150" cy="160" r="90" fill="none" stroke="rgba(10,78,255,0.15)" stroke-width="1"/>
-            <circle cx="150" cy="160" r="70" fill="rgba(10,78,255,0.05)" stroke="rgba(10,78,255,0.2)" stroke-width="2"/>
-            <!-- Stator windings -->
-            <g stroke="rgba(245,101,0,0.6)" stroke-width="3" fill="none">
-              <path d="M80 160 Q100 130 120 160 Q140 190 160 160 Q180 130 200 160 Q220 190 220 160"/>
-              <path d="M80 160 Q100 190 120 160 Q140 130 160 160 Q180 190 200 160 Q220 130 220 160" opacity="0.5"/>
-            </g>
-            <!-- Core shaft -->
-            <circle cx="150" cy="160" r="35" fill="rgba(245,101,0,0.1)" stroke="rgba(245,101,0,0.4)" stroke-width="2"/>
-            <circle cx="150" cy="160" r="15" fill="rgba(10,78,255,0.2)" stroke="#0A4EFF" stroke-width="2"/>
-            <circle cx="150" cy="160" r="6" fill="#F56500"/>
-            <!-- Rotor poles -->
-            <line x1="150" y1="125" x2="150" y2="145" stroke="#F56500" stroke-width="3" stroke-linecap="round"/>
-            <line x1="150" y1="175" x2="150" y2="195" stroke="#F56500" stroke-width="3" stroke-linecap="round"/>
-            <line x1="115" y1="160" x2="135" y2="160" stroke="#F56500" stroke-width="3" stroke-linecap="round"/>
-            <line x1="165" y1="160" x2="185" y2="160" stroke="#F56500" stroke-width="3" stroke-linecap="round"/>
-            <!-- Terminal housing -->
-            <rect x="100" y="230" width="100" height="50" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-            <circle cx="125" cy="255" r="8" fill="rgba(245,101,0,0.3)" stroke="#F56500" stroke-width="1.5"/>
-            <circle cx="150" cy="255" r="8" fill="rgba(10,78,255,0.3)" stroke="#0A4EFF" stroke-width="1.5"/>
-            <circle cx="175" cy="255" r="8" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
-            <!-- Label -->
-            <text x="150" y="300" text-anchor="middle" font-family="'Rajdhani',sans-serif" font-size="11" fill="rgba(245,101,0,0.7)" letter-spacing="3" font-weight="700">REPARACIÓN DE ALTERNADOR</text>
-            <text x="150" y="318" text-anchor="middle" font-family="'Barlow',sans-serif" font-size="10" fill="rgba(255,255,255,0.3)">Reconstrucción completa · Toyota Corolla</text>
-          </svg>
-        </div>
-        <div class="gallery-overlay">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <div class="gallery-overlay-text">Reparación de Alternador</div>
-        </div>
-      </div>
-
-      <!-- Motor arranque -->
-      <div class="gallery-item">
-        <div class="gallery-svg-wrap">
-          <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
-            <rect width="200" height="180" fill="#0D1420"/>
-            <rect x="40" y="40" width="120" height="70" rx="8" fill="rgba(245,101,0,0.08)" stroke="rgba(245,101,0,0.2)" stroke-width="1"/>
-            <!-- Bendix gear -->
-            <circle cx="100" cy="75" r="28" fill="none" stroke="rgba(245,101,0,0.5)" stroke-width="2"/>
-            <circle cx="100" cy="75" r="18" fill="rgba(245,101,0,0.1)" stroke="rgba(245,101,0,0.3)" stroke-width="1"/>
-            <!-- Gear teeth simplified -->
-            <g fill="rgba(245,101,0,0.4)">
-              <rect x="97" y="44" width="6" height="8" rx="1"/>
-              <rect x="97" y="99" width="6" height="8" rx="1"/>
-              <rect x="69" y="72" width="8" height="6" rx="1"/>
-              <rect x="123" y="72" width="8" height="6" rx="1"/>
-            </g>
-            <circle cx="100" cy="75" r="8" fill="rgba(10,78,255,0.4)" stroke="#0A4EFF" stroke-width="1.5"/>
-            <!-- Solenoid -->
-            <rect x="50" y="120" width="100" height="24" rx="4" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-            <rect x="55" y="124" width="12" height="16" rx="2" fill="rgba(245,101,0,0.3)"/>
-            <text x="100" y="160" text-anchor="middle" font-family="'Rajdhani',sans-serif" font-size="9" fill="rgba(245,101,0,0.6)" letter-spacing="2" font-weight="700">MOTOR DE ARRANQUE</text>
-          </svg>
-        </div>
-        <div class="gallery-overlay">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <div class="gallery-overlay-text">Motor de Arranque</div>
-        </div>
-      </div>
-
-      <!-- Diagnóstico -->
-      <div class="gallery-item">
-        <div class="gallery-svg-wrap">
-          <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
-            <rect width="200" height="180" fill="#0D1420"/>
-            <rect x="30" y="25" width="140" height="100" rx="6" fill="#111B2B" stroke="rgba(10,78,255,0.3)" stroke-width="1"/>
-            <rect x="35" y="30" width="130" height="65" rx="3" fill="rgba(10,78,255,0.05)"/>
-            <!-- OBD screen data -->
-            <rect x="42" y="38" width="50" height="6" rx="2" fill="rgba(10,78,255,0.5)"/>
-            <text x="97" y="44" font-family="monospace" font-size="7" fill="rgba(245,101,0,0.7)">P0340</text>
-            <rect x="42" y="50" width="110" height="2" rx="1" fill="rgba(255,255,255,0.05)"/>
-            <!-- Waveform -->
-            <polyline points="42,70 55,58 68,72 81,62 94,68 107,55 120,70 133,63 146,70 159,60" fill="none" stroke="#0A4EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <polyline points="42,82 55,78 68,80 81,76 94,79 107,75 120,81 133,77 146,82 159,78" fill="none" stroke="rgba(245,101,0,0.5)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
-            <!-- Buttons -->
-            <rect x="40" y="112" width="24" height="8" rx="2" fill="rgba(245,101,0,0.3)"/>
-            <rect x="68" y="112" width="24" height="8" rx="2" fill="rgba(255,255,255,0.06)"/>
-            <rect x="96" y="112" width="24" height="8" rx="2" fill="rgba(255,255,255,0.06)"/>
-            <!-- OBD connector cable -->
-            <path d="M100 125 Q100 145 80 150 L80 155" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3" stroke-linecap="round"/>
-            <rect x="70" y="155" width="20" height="12" rx="2" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
-            <text x="100" y="170" text-anchor="middle" font-family="'Rajdhani',sans-serif" font-size="9" fill="rgba(10,78,255,0.7)" letter-spacing="2" font-weight="700">DIAGNÓSTICO OBD</text>
-          </svg>
-        </div>
-        <div class="gallery-overlay">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <div class="gallery-overlay-text">Diagnóstico OBD</div>
-        </div>
-      </div>
-
-      <!-- AC System -->
-      <div class="gallery-item">
-        <div class="gallery-svg-wrap">
-          <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
-            <rect width="200" height="180" fill="#0D1420"/>
-            <!-- AC compressor -->
-            <circle cx="100" cy="85" r="45" fill="rgba(10,78,255,0.05)" stroke="rgba(10,78,255,0.2)" stroke-width="1"/>
-            <circle cx="100" cy="85" r="30" fill="rgba(10,78,255,0.08)" stroke="rgba(10,78,255,0.3)" stroke-width="1.5"/>
-            <!-- Compressor body -->
-            <rect x="70" y="65" width="60" height="40" rx="6" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-            <rect x="78" y="72" width="14" height="26" rx="3" fill="rgba(10,78,255,0.2)" stroke="rgba(10,78,255,0.4)" stroke-width="1"/>
-            <rect x="96" y="72" width="14" height="26" rx="3" fill="rgba(10,78,255,0.2)" stroke="rgba(10,78,255,0.4)" stroke-width="1"/>
-            <rect x="114" y="72" width="8" height="26" rx="3" fill="rgba(245,101,0,0.2)" stroke="rgba(245,101,0,0.4)" stroke-width="1"/>
-            <!-- Refrigerant lines -->
-            <path d="M55 85 Q45 85 40 75 L40 60" fill="none" stroke="rgba(10,78,255,0.5)" stroke-width="3" stroke-linecap="round"/>
-            <path d="M145 85 Q155 85 160 75 L160 60" fill="none" stroke="rgba(245,101,0,0.5)" stroke-width="3" stroke-linecap="round"/>
-            <!-- Pressure gauge indicators -->
-            <circle cx="40" cy="55" r="10" fill="none" stroke="rgba(10,78,255,0.4)" stroke-width="1.5"/>
-            <line x1="40" y1="55" x2="46" y2="51" stroke="#0A4EFF" stroke-width="1.5" stroke-linecap="round"/>
-            <circle cx="160" cy="55" r="10" fill="none" stroke="rgba(245,101,0,0.4)" stroke-width="1.5"/>
-            <line x1="160" y1="55" x2="165" y2="50" stroke="#F56500" stroke-width="1.5" stroke-linecap="round"/>
-            <text x="100" y="160" text-anchor="middle" font-family="'Rajdhani',sans-serif" font-size="9" fill="rgba(10,78,255,0.7)" letter-spacing="2" font-weight="700">AIRE ACONDICIONADO</text>
-          </svg>
-        </div>
-        <div class="gallery-overlay">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <div class="gallery-overlay-text">Sistema A/C</div>
-        </div>
-      </div>
-
+    <!-- FILTERS -->
+    <div class="shop-filters fade-in" id="shopFilters">
+      <button class="shop-filter active" data-cat="all">Todos</button>
+      <button class="shop-filter" data-cat="repuesto">Repuestos</button>
+      <button class="shop-filter" data-cat="servicio">Servicios</button>
+      <button class="shop-filter" data-cat="diagnostico">Diagnóstico</button>
     </div>
+
+    <!-- PRODUCTS GRID -->
+    <div class="shop-grid fade-in" id="shopGrid">
+
+      <!-- PRODUCTO 1 -->
+      <div class="shop-card" data-cat="repuesto" data-id="1" data-name="Motor de Arranque Remanufacturado" data-price="185" data-desc="Garantía 6 meses · Compatible todas las marcas">
+        <div class="shop-card-badge">Más Vendido</div>
+        <div class="shop-card-visual">
+          <svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="width:90px;height:75px">
+            <rect x="20" y="20" width="80" height="50" rx="8" fill="rgba(245,101,0,0.08)" stroke="rgba(245,101,0,0.25)" stroke-width="1.5"/>
+            <circle cx="60" cy="45" r="20" fill="none" stroke="rgba(245,101,0,0.6)" stroke-width="2"/>
+            <circle cx="60" cy="45" r="12" fill="rgba(245,101,0,0.12)" stroke="rgba(245,101,0,0.4)" stroke-width="1.5"/>
+            <circle cx="60" cy="45" r="5" fill="#F56500" opacity="0.8"/>
+            <rect x="20" y="68" width="80" height="10" rx="2" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+            <rect x="24" y="70" width="10" height="6" rx="1" fill="rgba(245,101,0,0.4)"/>
+          </svg>
+        </div>
+        <div class="shop-card-body">
+          <div class="shop-card-cat">Repuesto</div>
+          <div class="shop-card-name">Motor de Arranque</div>
+          <div class="shop-card-desc">Remanufacturado · 6 meses garantía</div>
+          <div class="shop-card-price">$185<span class="shop-price-unit"> + instalación</span></div>
+        </div>
+        <button class="shop-add-btn" onclick="addToCart(1,'Motor de Arranque Remanufacturado',185,'Garantía 6 meses · Compatible todas las marcas')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar
+        </button>
+      </div>
+
+      <!-- PRODUCTO 2 -->
+      <div class="shop-card" data-cat="repuesto" data-id="2" data-name="Alternador Remanufacturado" data-price="220" data-desc="12V · Garantía 6 meses · Universal">
+        <div class="shop-card-visual">
+          <svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="width:90px;height:75px">
+            <circle cx="60" cy="48" r="28" fill="none" stroke="rgba(10,78,255,0.3)" stroke-width="1.5"/>
+            <circle cx="60" cy="48" r="20" fill="rgba(10,78,255,0.07)" stroke="rgba(10,78,255,0.4)" stroke-width="2"/>
+            <g stroke="rgba(245,101,0,0.7)" stroke-width="2.5" fill="none">
+              <path d="M35 48 Q47 30 60 48 Q73 66 85 48"/>
+              <path d="M35 48 Q47 66 60 48 Q73 30 85 48" opacity="0.45"/>
+            </g>
+            <circle cx="60" cy="48" r="8" fill="rgba(10,78,255,0.25)" stroke="#0A4EFF" stroke-width="1.5"/>
+            <circle cx="60" cy="48" r="3" fill="#F56500"/>
+          </svg>
+        </div>
+        <div class="shop-card-body">
+          <div class="shop-card-cat">Repuesto</div>
+          <div class="shop-card-name">Alternador</div>
+          <div class="shop-card-desc">Remanufacturado · 12V · 6 meses garantía</div>
+          <div class="shop-card-price">$220<span class="shop-price-unit"> + instalación</span></div>
+        </div>
+        <button class="shop-add-btn" onclick="addToCart(2,'Alternador Remanufacturado',220,'12V · Garantía 6 meses')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar
+        </button>
+      </div>
+
+      <!-- PRODUCTO 3 -->
+      <div class="shop-card" data-cat="diagnostico" data-id="3" data-name="Diagnóstico OBD Completo" data-price="45" data-desc="Lectura de todos los módulos del vehículo + reporte">
+        <div class="shop-card-badge shop-badge-blue">Popular</div>
+        <div class="shop-card-visual">
+          <svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="width:90px;height:75px">
+            <rect x="18" y="15" width="84" height="58" rx="5" fill="#0D1420" stroke="rgba(10,78,255,0.4)" stroke-width="1.5"/>
+            <rect x="23" y="20" width="74" height="36" rx="3" fill="rgba(10,78,255,0.06)"/>
+            <polyline points="28,45 38,32 48,40 58,28 68,38 78,30 88,37" fill="none" stroke="#0A4EFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="28,52 38,50 48,51 58,48 68,50 78,47 88,50" fill="none" stroke="rgba(245,101,0,0.5)" stroke-width="1.2" stroke-linecap="round"/>
+            <rect x="34" y="60" width="16" height="6" rx="1.5" fill="rgba(245,101,0,0.4)"/>
+            <rect x="54" y="60" width="16" height="6" rx="1.5" fill="rgba(255,255,255,0.08)"/>
+            <rect x="74" y="60" width="16" height="6" rx="1.5" fill="rgba(255,255,255,0.08)"/>
+            <path d="M60 73 Q60 82 50 85" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2.5" stroke-linecap="round"/>
+            <rect x="40" y="85" width="20" height="10" rx="2" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="shop-card-body">
+          <div class="shop-card-cat">Diagnóstico</div>
+          <div class="shop-card-name">Diagnóstico OBD</div>
+          <div class="shop-card-desc">Lectura completa · Reporte detallado</div>
+          <div class="shop-card-price">$45</div>
+        </div>
+        <button class="shop-add-btn" onclick="addToCart(3,'Diagnóstico OBD Completo',45,'Lectura de todos los módulos + reporte')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar
+        </button>
+      </div>
+
+      <!-- PRODUCTO 4 -->
+      <div class="shop-card" data-cat="servicio" data-id="4" data-name="Servicio de Aire Acondicionado" data-price="120" data-desc="Diagnóstico + recarga de refrigerante + revisión compresor">
+        <div class="shop-card-visual">
+          <svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="width:90px;height:75px">
+            <circle cx="60" cy="46" r="24" fill="rgba(10,78,255,0.06)" stroke="rgba(10,78,255,0.25)" stroke-width="1.5"/>
+            <circle cx="60" cy="46" r="15" fill="rgba(10,78,255,0.1)" stroke="rgba(10,78,255,0.35)" stroke-width="1.5"/>
+            <rect x="44" y="34" width="32" height="24" rx="4" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+            <rect x="50" y="38" width="8" height="16" rx="2" fill="rgba(10,78,255,0.3)" stroke="rgba(10,78,255,0.5)" stroke-width="1"/>
+            <rect x="62" y="38" width="8" height="16" rx="2" fill="rgba(10,78,255,0.3)" stroke="rgba(10,78,255,0.5)" stroke-width="1"/>
+            <path d="M30 46 Q20 46 18 38 L18 28" fill="none" stroke="rgba(10,78,255,0.5)" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M90 46 Q100 46 102 38 L102 28" fill="none" stroke="rgba(245,101,0,0.5)" stroke-width="2.5" stroke-linecap="round"/>
+            <text x="60" y="82" text-anchor="middle" font-family="'Rajdhani',sans-serif" font-size="8" fill="rgba(10,78,255,0.6)" letter-spacing="2" font-weight="700">A/C</text>
+          </svg>
+        </div>
+        <div class="shop-card-body">
+          <div class="shop-card-cat">Servicio</div>
+          <div class="shop-card-name">Aire Acondicionado</div>
+          <div class="shop-card-desc">Diagnóstico + recarga + revisión</div>
+          <div class="shop-card-price">$120</div>
+        </div>
+        <button class="shop-add-btn" onclick="addToCart(4,'Servicio de Aire Acondicionado',120,'Diagnóstico + recarga + revisión compresor')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar
+        </button>
+      </div>
+
+      <!-- PRODUCTO 5 -->
+      <div class="shop-card" data-cat="repuesto" data-id="5" data-name="Batería Automotriz 12V 75Ah" data-price="150" data-desc="Batería nueva · 1 año garantía · Libre mantenimiento">
+        <div class="shop-card-visual">
+          <svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="width:90px;height:75px">
+            <rect x="20" y="28" width="80" height="48" rx="5" fill="rgba(245,101,0,0.07)" stroke="rgba(245,101,0,0.3)" stroke-width="1.5"/>
+            <rect x="38" y="20" width="16" height="10" rx="2" fill="rgba(245,101,0,0.4)"/>
+            <rect x="66" y="20" width="16" height="10" rx="2" fill="rgba(10,78,255,0.4)"/>
+            <rect x="28" y="36" width="28" height="32" rx="3" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <rect x="64" y="36" width="28" height="32" rx="3" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <text x="60" y="57" text-anchor="middle" font-family="'Barlow Condensed',sans-serif" font-size="11" font-weight="800" fill="rgba(245,101,0,0.7)" letter-spacing="1">12V</text>
+          </svg>
+        </div>
+        <div class="shop-card-body">
+          <div class="shop-card-cat">Repuesto</div>
+          <div class="shop-card-name">Batería 12V 75Ah</div>
+          <div class="shop-card-desc">Libre mantenimiento · 1 año garantía</div>
+          <div class="shop-card-price">$150</div>
+        </div>
+        <button class="shop-add-btn" onclick="addToCart(5,'Batería Automotriz 12V 75Ah',150,'1 año garantía · Libre mantenimiento')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar
+        </button>
+      </div>
+
+      <!-- PRODUCTO 6 -->
+      <div class="shop-card" data-cat="servicio" data-id="6" data-name="Revisión Sistema Eléctrico Completo" data-price="80" data-desc="Inspección de arneses, fusibles, relés y cableado general">
+        <div class="shop-card-visual">
+          <svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" style="width:90px;height:75px">
+            <circle cx="60" cy="48" r="22" fill="rgba(245,101,0,0.06)" stroke="rgba(245,101,0,0.2)" stroke-width="1.5"/>
+            <path d="M60 26 L60 38" stroke="#F56500" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M60 58 L60 70" stroke="#F56500" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M38 48 L50 48" stroke="#F56500" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M70 48 L82 48" stroke="#F56500" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M44 32 L52 40" stroke="rgba(245,101,0,0.5)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M68 56 L76 64" stroke="rgba(245,101,0,0.5)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M76 32 L68 40" stroke="rgba(245,101,0,0.5)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M52 56 L44 64" stroke="rgba(245,101,0,0.5)" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="60" cy="48" r="7" fill="rgba(245,101,0,0.25)" stroke="#F56500" stroke-width="1.5"/>
+            <circle cx="60" cy="48" r="3" fill="#F56500"/>
+          </svg>
+        </div>
+        <div class="shop-card-body">
+          <div class="shop-card-cat">Servicio</div>
+          <div class="shop-card-name">Revisión Eléctrica</div>
+          <div class="shop-card-desc">Arneses, fusibles, relés y cableado</div>
+          <div class="shop-card-price">$80</div>
+        </div>
+        <button class="shop-add-btn" onclick="addToCart(6,'Revisión Sistema Eléctrico Completo',80,'Inspección de arneses, fusibles, relés y cableado')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar
+        </button>
+      </div>
+
+    </div><!-- /shop-grid -->
+
+    <!-- CART PANEL -->
+    <div class="shop-cart-panel fade-in" id="cartPanel" style="display:none;">
+      <div class="cart-panel-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="cart-icon-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.99 1.61H19a2 2 0 001.96-1.63L23 6H6"/></svg>
+          </div>
+          <div>
+            <div class="cart-panel-title">Tu Pedido</div>
+            <div class="cart-panel-sub" id="cartCount">0 productos seleccionados</div>
+          </div>
+        </div>
+        <button class="cart-clear-btn" onclick="clearCart()">Limpiar</button>
+      </div>
+
+      <div class="cart-items-list" id="cartItemsList"></div>
+
+      <div class="cart-total-row">
+        <span class="cart-total-label">Total Estimado</span>
+        <span class="cart-total-val" id="cartTotal">$0</span>
+      </div>
+
+      <div class="cart-note-wrap">
+        <label class="cart-note-label">Nota adicional (opcional)</label>
+        <textarea id="cartNote" class="cart-note-input" placeholder="Ej: Mi vehículo es Toyota Corolla 2019, el problema es que no enciende..."></textarea>
+      </div>
+
+      <button class="cart-whatsapp-btn" id="cartWaBtn" onclick="sendToWhatsApp()">
+        <div class="cart-wa-spinner" id="cartSpinner" style="display:none;">
+          <div class="spinner-ring"></div>
+        </div>
+        <span id="cartWaBtnText">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          Generar pedido con IA y enviar a WhatsApp
+        </span>
+      </button>
+
+      <div class="cart-ai-note">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;opacity:0.6"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        La IA de IMPEL generará un mensaje profesional con tu pedido completo antes de abrirlo en WhatsApp.
+      </div>
+    </div>
+
+  </div><!-- /container -->
+
+  <!-- FLOATING CART BUTTON (mobile) -->
+  <div class="cart-float-btn" id="cartFloatBtn" onclick="toggleCartPanel()" style="display:none;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.99 1.61H19a2 2 0 001.96-1.63L23 6H6"/></svg>
+    <div class="cart-float-count" id="cartFloatCount">0</div>
   </div>
+
+  <style>
+  /* ─── SHOP STYLES ─── */
+  #galeria { padding: 100px 0; background: var(--dark-2); position: relative; }
+
+  .shop-filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+  .shop-filter {
+    font-family: var(--font-accent);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--gray);
+    padding: 9px 20px;
+    cursor: pointer;
+    clip-path: polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+    transition: all 0.3s;
+  }
+  .shop-filter.active, .shop-filter:hover {
+    background: rgba(245,101,0,0.12);
+    border-color: rgba(245,101,0,0.4);
+    color: var(--white);
+  }
+  .shop-filter.active { background: rgba(245,101,0,0.18); border-color: var(--orange); color: var(--orange); }
+
+  .shop-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  @media(max-width:768px) { .shop-grid { grid-template-columns: repeat(2,1fr); gap: 12px; } }
+  @media(max-width:420px) { .shop-grid { grid-template-columns: 1fr; } }
+
+  .shop-card {
+    background: var(--dark-3);
+    border: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.35s ease;
+    clip-path: polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
+    display: flex;
+    flex-direction: column;
+  }
+  .shop-card:hover {
+    border-color: rgba(245,101,0,0.25);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+  }
+  .shop-card::before {
+    content:'';
+    position:absolute;
+    top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,var(--orange),var(--blue));
+    transform:scaleX(0);transform-origin:left;
+    transition:transform 0.4s ease;
+  }
+  .shop-card:hover::before { transform:scaleX(1); }
+
+  .shop-card.hidden { display:none; }
+
+  .shop-card-badge {
+    position:absolute;top:12px;right:12px;
+    background:var(--orange);color:white;
+    font-family:var(--font-accent);font-size:10px;font-weight:700;
+    letter-spacing:1px;text-transform:uppercase;
+    padding:4px 10px;
+    clip-path:polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,5px 100%,0 calc(100% - 5px));
+  }
+  .shop-badge-blue { background:var(--blue); }
+
+  .shop-card-visual {
+    display:flex;justify-content:center;align-items:center;
+    padding:24px 16px 8px;
+    background:linear-gradient(135deg,rgba(10,78,255,0.03),rgba(245,101,0,0.03));
+    min-height:110px;
+  }
+
+  .shop-card-body { padding: 14px 16px 8px; flex:1; }
+  .shop-card-cat {
+    font-family:var(--font-accent);font-size:10px;font-weight:700;
+    letter-spacing:2.5px;text-transform:uppercase;
+    color:var(--orange);margin-bottom:6px;
+  }
+  .shop-card-name {
+    font-family:var(--font-display);font-size:17px;font-weight:700;
+    text-transform:uppercase;letter-spacing:0.5px;
+    color:var(--white);margin-bottom:5px;line-height:1.2;
+  }
+  .shop-card-desc { font-size:12px;color:var(--gray);line-height:1.5;margin-bottom:8px; }
+  .shop-card-price {
+    font-family:var(--font-display);font-size:24px;font-weight:900;
+    color:var(--orange);letter-spacing:-0.5px;
+  }
+  .shop-price-unit { font-size:12px;font-weight:400;color:var(--gray); }
+
+  .shop-add-btn {
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    background:rgba(245,101,0,0.1);
+    border:1px solid rgba(245,101,0,0.2);
+    border-top:none;
+    color:var(--orange);
+    font-family:var(--font-accent);font-size:12px;font-weight:700;
+    letter-spacing:1.5px;text-transform:uppercase;
+    padding:14px;cursor:pointer;
+    width:100%;
+    transition:all 0.3s;
+    margin-top:auto;
+  }
+  .shop-add-btn:hover { background:rgba(245,101,0,0.2); color:white; }
+  .shop-add-btn.added { background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);color:#4ade80; }
+
+  /* CART PANEL */
+  .shop-cart-panel {
+    background:var(--dark-3);
+    border:1px solid rgba(245,101,0,0.15);
+    padding:28px;
+    clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));
+    animation:slideUpCart 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes slideUpCart { from { opacity:0;transform:translateY(24px); } to { opacity:1;transform:none; } }
+
+  .cart-panel-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:24px; }
+  .cart-icon-wrap {
+    width:40px;height:40px;
+    background:rgba(245,101,0,0.1);border:1px solid rgba(245,101,0,0.2);
+    display:flex;align-items:center;justify-content:center;color:var(--orange);
+    clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px));
+  }
+  .cart-panel-title { font-family:var(--font-display);font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:1px; }
+  .cart-panel-sub { font-size:12px;color:var(--gray);font-family:var(--font-accent);letter-spacing:1px; }
+  .cart-clear-btn {
+    font-family:var(--font-accent);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+    background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--gray);
+    padding:7px 14px;cursor:pointer;border-radius:2px;transition:all 0.2s;
+  }
+  .cart-clear-btn:hover { border-color:rgba(255,100,100,0.4);color:#f87171; }
+
+  .cart-items-list { display:flex;flex-direction:column;gap:10px;margin-bottom:20px; }
+  .cart-item {
+    display:flex;align-items:center;gap:12px;
+    background:rgba(255,255,255,0.02);
+    border:1px solid rgba(255,255,255,0.05);
+    padding:12px 14px;
+    border-radius:4px;
+    animation:fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:none;} }
+  .cart-item-name { font-family:var(--font-display);font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;flex:1; }
+  .cart-item-desc { font-size:11px;color:var(--gray);margin-top:2px; }
+  .cart-item-price { font-family:var(--font-display);font-size:16px;font-weight:800;color:var(--orange);flex-shrink:0; }
+  .cart-item-remove {
+    background:none;border:none;color:var(--gray);cursor:pointer;
+    width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+    border-radius:50%;transition:all 0.2s;flex-shrink:0;
+  }
+  .cart-item-remove:hover { background:rgba(255,100,100,0.1);color:#f87171; }
+
+  .cart-total-row {
+    display:flex;justify-content:space-between;align-items:center;
+    padding:16px 0;border-top:1px solid rgba(255,255,255,0.06);
+    margin-bottom:20px;
+  }
+  .cart-total-label { font-family:var(--font-accent);font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--gray); }
+  .cart-total-val { font-family:var(--font-display);font-size:28px;font-weight:900;color:var(--orange); }
+
+  .cart-note-wrap { margin-bottom:20px; }
+  .cart-note-label { font-family:var(--font-accent);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px; }
+  .cart-note-input {
+    width:100%;background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.08);color:var(--white);
+    font-family:var(--font-body);font-size:14px;line-height:1.5;
+    padding:12px 14px;resize:vertical;min-height:80px;border-radius:4px;
+    transition:border-color 0.3s;
+  }
+  .cart-note-input:focus { outline:none;border-color:rgba(245,101,0,0.3); }
+
+  .cart-whatsapp-btn {
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    width:100%;padding:18px;
+    background:linear-gradient(135deg,#25D366,#128C7E);
+    color:white;border:none;cursor:pointer;
+    font-family:var(--font-accent);font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+    clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));
+    transition:all 0.3s;margin-bottom:14px;position:relative;overflow:hidden;
+  }
+  .cart-whatsapp-btn:hover { opacity:0.92;transform:translateY(-2px);box-shadow:0 8px 30px rgba(37,211,102,0.3); }
+  .cart-whatsapp-btn:disabled { opacity:0.6;cursor:not-allowed;transform:none; }
+
+  .cart-ai-note {
+    display:flex;align-items:flex-start;gap:8px;
+    font-size:12px;color:var(--gray);line-height:1.5;
+  }
+
+  .spinner-ring {
+    width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);
+    border-top-color:white;border-radius:50%;
+    animation:spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* Float cart btn */
+  .cart-float-btn {
+    position:fixed;bottom:88px;right:16px;z-index:900;
+    width:54px;height:54px;
+    background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    color:white;cursor:pointer;
+    box-shadow:0 4px 20px rgba(245,101,0,0.5);
+    animation:bouncePop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes bouncePop { from{opacity:0;transform:scale(0.4);}to{opacity:1;transform:scale(1);} }
+  .cart-float-count {
+    position:absolute;top:-4px;right:-4px;
+    background:#25D366;color:white;
+    font-size:11px;font-weight:800;
+    width:20px;height:20px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    border:2px solid var(--dark);
+  }
+  </style>
+</section>
 </section>
 
 <!-- CLIENTS CAROUSEL -->
@@ -2402,69 +2838,90 @@
     <div class="clients-track" id="clientsTrack">
 
   <!-- ===== CLIENTES ===== -->
+  <!-- Coca-Cola: imagen real -->
   <div class="client-logo-item">
-    <img src="img/clientes/cocacola.png" alt="Coca Cola">
-  </div>
+  <img src="img/cocacola.png" alt="Coca-Cola" style="height:80px;width:auto;object-fit:contain;">
+</div>
+
+  <!-- Grupo Torres -->
+  <div class="client-logo-item">
+  <img src="img/felipe.png" alt="Felipe" style="height:140px;width:auto;object-fit:contain;">
+</div>
+
+
+  <!-- TransPanama -->
+  <div class="client-logo-item">
+  <img src="img/supro.png" alt="Felipe" style="height:140px;width:auto;object-fit:contain;">
+</div>
+
+  <!-- Riba Smith -->
+  <div class="client-logo-item">
+  <img src="img/ribs.png" alt="Coca-Cola" style="height:120px;width:auto;object-fit:contain;">
+</div>
+
+  <!-- Estrella Azul -->
+  <div class="client-logo-item">
+  <img src="img/blue.png" alt="Coca-Cola" style="height:100px;width:auto;object-fit:contain;">
+</div>
+
+  <!-- Dicarina -->
+  <div class="client-logo-item">
+  <img src="img/dicarina.png" alt="Coca-Cola" style="height:100px;width:auto;object-fit:contain;">
+</div>
+
+  <!-- Forza Logistics -->
+  <div class="client-logo-item">
+  <img src="img/forza.png" alt="Coca-Cola" style="height:100px;width:auto;object-fit:contain;">
+</div>
 
   <div class="client-logo-item">
-    <img src="img/clientes/riba.png" alt="Riba Smith">
-  </div>
+  <img src="img/llantero.png" alt="llantero" style="height:100px;width:auto;object-fit:contain;">
+</div>
 
+  <!-- IMPEL Fleet -->
   <div class="client-logo-item">
-    <img src="img/clientes/estrella.png" alt="Estrella Azul">
-  </div>
-
-  <div class="client-logo-item">
-    <img src="img/clientes/dicarina.png" alt="Dicarina">
-  </div>
-
-  <div class="client-logo-item">
-    <img src="img/clientes/forza.png" alt="Forza Logistics">
-  </div>
-
-  <div class="client-logo-item">
-    <img src="img/clientes/impel.png" alt="IMPEL Fleet">
-  </div>
-
-  <div class="client-logo-item">
-    <img src="img/clientes/torres.png" alt="Grupo Torres">
-  </div>
-
-  <div class="client-logo-item">
-    <img src="img/clientes/transpanama.png" alt="TransPanama">
+    <svg viewBox="0 0 170 54" xmlns="http://www.w3.org/2000/svg" style="height:42px;width:auto">
+      <rect x="2" y="8" width="16" height="38" rx="2" fill="rgba(245,101,0,0.7)"/>
+      <rect x="20" y="8" width="16" height="38" rx="2" fill="rgba(10,78,255,0.6)"/>
+      <rect x="38" y="8" width="16" height="38" rx="2" fill="rgba(245,101,0,0.5)"/>
+      <text x="66" y="25" font-family="'Barlow Condensed',sans-serif" font-size="16" font-weight="900" fill="white" letter-spacing="2">IMPEL</text>
+      <text x="66" y="41" font-family="'Barlow Condensed',sans-serif" font-size="10" font-weight="600" fill="rgba(245,101,0,0.8)" letter-spacing="2">FLEET CORP</text>
+    </svg>
   </div>
 
   <!-- ===== DUPLICADO PARA LOOP ===== -->
   <div class="client-logo-item">
-    <img src="img/clientes/cocacola.png" alt="Coca Cola">
-  </div>
+  <img src="img/cocacola.png" alt="Coca-Cola" style="height:80px;width:auto;object-fit:contain;">
+</div>
+  <div class="client-logo-item">
+  <img src="img/felipe.png" alt="Felipe" style="height:140px;width:auto;object-fit:contain;">
+</div>
 
   <div class="client-logo-item">
-    <img src="img/clientes/riba.png" alt="Riba Smith">
-  </div>
-
+  <img src="img/supro.png" alt="Felipe" style="height:140px;width:auto;object-fit:contain;">
+</div>
   <div class="client-logo-item">
-    <img src="img/clientes/estrella.png" alt="Estrella Azul">
-  </div>
-
+  <img src="img/ribs.png" alt="Riba" style="height:120px;width:auto;object-fit:contain;">
+</div>
   <div class="client-logo-item">
-    <img src="img/clientes/dicarina.png" alt="Dicarina">
-  </div>
-
+  <img src="img/blue.png" alt="Estrella" style="height:100px;width:auto;object-fit:contain;">
+</div>
   <div class="client-logo-item">
-    <img src="img/clientes/forza.png" alt="Forza Logistics">
-  </div>
-
+  <img src="img/dicarina.png" alt="Dicarina" style="height:100px;width:auto;object-fit:contain;">
+</div>
   <div class="client-logo-item">
-    <img src="img/clientes/impel.png" alt="IMPEL Fleet">
-  </div>
-
+  <img src="img/forza.png" alt="Forza" style="height:100px;width:auto;object-fit:contain;">
   <div class="client-logo-item">
-    <img src="img/clientes/torres.png" alt="Grupo Torres">
-  </div>
-
+  <img src="img/llantero.png" alt="Llantero" style="height:100px;width:auto;object-fit:contain;">
+</div>
   <div class="client-logo-item">
-    <img src="img/clientes/transpanama.png" alt="TransPanama">
+    <svg viewBox="0 0 170 54" xmlns="http://www.w3.org/2000/svg" style="height:42px;width:auto">
+      <rect x="2" y="8" width="16" height="38" rx="2" fill="rgba(245,101,0,0.7)"/>
+      <rect x="20" y="8" width="16" height="38" rx="2" fill="rgba(10,78,255,0.6)"/>
+      <rect x="38" y="8" width="16" height="38" rx="2" fill="rgba(245,101,0,0.5)"/>
+      <text x="66" y="25" font-family="'Barlow Condensed',sans-serif" font-size="16" font-weight="900" fill="white" letter-spacing="2">IMPEL</text>
+      <text x="66" y="41" font-family="'Barlow Condensed',sans-serif" font-size="10" font-weight="600" fill="rgba(245,101,0,0.8)" letter-spacing="2">FLEET CORP</text>
+    </svg>
   </div>
 
 </div>
@@ -2473,12 +2930,25 @@
 <!-- TESTIMONIALS -->
 <div class="section-divider"></div>
 <section id="testimonios">
-  <div class="container">
-    <div class="fade-in" style="text-align:center;max-width:600px;margin:0 auto;">
-      <div class="section-label" style="justify-content:center;">Experiencias Reales</div>
-      <h2 class="section-title">Lo Que Dicen Nuestros <span>Clientes</span></h2>
-      <div class="divider" style="margin:20px auto;"></div>
-    </div>
+  <div class="container" style="text-align:center;">
+
+    <div class="section-label">TRANSPARENCIA REAL</div>
+    <h2 class="section-title">
+      Opiniones <span>verificadas</span>
+    </h2>
+    <div class="divider" style="margin:auto;"></div>
+
+    <p style="color: var(--gray); max-width:500px; margin:20px auto;">
+      Estamos recopilando experiencias reales de nuestros clientes.
+      Muy pronto podrás ver opiniones 100% verificadas.
+    </p>
+
+    <a href="https://www.google.com/search?q=importadora+de+partes+electromec%C3%A1nicas+panam%C3%A1&rlz=1C1CHBD_esPA905PA905&oq=IMPO&gs_lcrp=EgZjaHJvbWUqCAgAEEUYJxg7MggIABBFGCcYOzIGCAEQRRg5MgwIAhAAGEMYgAQYigUyDwgDEAAYQxjJAxiABBiKBTINCAQQABiSAxiABBiKBTIGCAUQRRg8MgYIBhBFGDwyBggHEEUYPNIBCDIwNjlqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8#lrd=0x8faca9acf1195055:0x875d777315a0b932,3,,,," target="_blank" class="btn-primary">
+      Dejar reseña en Google
+    </a>
+
+  </div>
+</section>
 
     <!-- CAROUSEL TESTIMONIALS -->
     <div class="testi-new-wrapper fade-in">
@@ -2560,7 +3030,7 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="#F56500"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="#F56500"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
         </div>
-        <p class="testi-text">Mi Toyota llevaba semanas fallando. Fui a varios talleres y nadie identificaba el problema. En IMPEL hicieron el diagnóstico en menos de una hora y al día siguiente ya tenía mi carro listo. Trabajo impecable.</p>
+        <p class="testi-text">Después de mucho buscar un electromecánico serio,honrado y responsable , encontré este tesoro escondido. El electromecánico es un as y la sra que vende los repuestos con esa amabilidad hacen que a uno se le olvide el mal rato por estar varado.</p>
         <div class="testi-author">
           <div class="testi-avatar">JR</div>
           <div>
@@ -2804,7 +3274,7 @@
           <ul class="footer-links" style="margin-bottom:24px;">
             <li><a href="tel:+50762838021" style="display:flex;align-items:center;gap:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a2 2 0 012-2.18h3"/></svg>+507 6283-8021</a></li>
             <li><a href="tel:3948830" style="display:flex;align-items:center;gap:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a2 2 0 012-2.18h3"/></svg>394-8830</a></li>
-            <li><a href="mailto:info@impelpanama.com" style="display:flex;align-items:center;gap:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>info@impelpanama.com</a></li>
+            <li><a href="/cdn-cgi/l/email-protection#e38a8d858ca38a8e93868f93828d828e82cd808c8e" style="display:flex;align-items:center;gap:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span class="__cf_email__" data-cfemail="aec7c0c8c1eec7c3decbc2decfc0cfc3cf80cdc1c3">[email&#160;protected]</span></a></li>
             <li><a href="#" style="display:flex;align-items:center;gap:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Ciudad de Panamá</a></li>
           </ul>
           <!-- Emergency CTA -->
@@ -2832,191 +3302,853 @@
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-  // ── NAVBAR SCROLL ──
-  const navbar = document.getElementById('navbar');
-  window.addEventListener('scroll', () => {
-    navbar.classList.toggle('scrolled', window.scrollY > 50);
-  });
+<!-- ═══════════════════════════════════════════════════════
+     IMPEL — SISTEMA COMPLETO: LOGIN + ADMIN + TESTIMONIOS COMPARTIDOS + CARRITO IA
+     ═══════════════════════════════════════════════════════ -->
 
-  // ── MOBILE MENU ──
-  const menuToggle = document.getElementById('menuToggle');
-  const mobileMenu = document.getElementById('mobileMenu');
-  menuToggle.addEventListener('click', () => {
-    mobileMenu.classList.toggle('open');
-  });
-  mobileMenu.querySelectorAll('a').forEach(a => {
-    a.addEventListener('click', () => mobileMenu.classList.remove('open'));
-  });
+<!-- ── LOGIN MODAL ── -->
+<div id="loginModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(8,12,18,0.95);backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;">
+  <div style="background:var(--dark-3);border:1px solid rgba(245,101,0,0.2);padding:48px 40px;max-width:420px;width:90%;position:relative;clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px));">
+    <div style="position:absolute;top:0;left:0;right:20px;height:3px;background:linear-gradient(90deg,var(--orange),var(--blue));"></div>
+    <button onclick="closeLogin()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--gray);cursor:pointer;font-size:20px;line-height:1;">✕</button>
+    <div style="text-align:center;margin-bottom:32px;">
+      <img src="logo.png" style="height:48px;margin-bottom:12px;filter:drop-shadow(0 0 12px rgba(245,101,0,0.4));">
+      <div style="font-family:var(--font-display);font-size:24px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--white);">Acceso IMPEL</div>
+      <div style="font-family:var(--font-accent);font-size:11px;letter-spacing:3px;color:var(--orange);text-transform:uppercase;margin-top:4px;">Panel de Control</div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-family:var(--font-accent);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:8px;">Usuario</label>
+      <input id="loginUser" type="text" placeholder="Ingresa tu usuario" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--white);font-family:var(--font-body);font-size:15px;padding:13px 16px;border-radius:4px;outline:none;transition:border-color 0.3s;" onfocus="this.style.borderColor='rgba(245,101,0,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div style="margin-bottom:24px;">
+      <label style="display:block;font-family:var(--font-accent);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:8px;">Contraseña</label>
+      <input id="loginPass" type="password" placeholder="••••••••" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--white);font-family:var(--font-body);font-size:15px;padding:13px 16px;border-radius:4px;outline:none;transition:border-color 0.3s;" onfocus="this.style.borderColor='rgba(245,101,0,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div id="loginError" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;font-family:var(--font-accent);font-size:12px;letter-spacing:1px;padding:10px 14px;margin-bottom:16px;border-radius:4px;text-align:center;">Usuario o contraseña incorrectos</div>
+    <button onclick="doLogin()" style="width:100%;background:linear-gradient(135deg,var(--orange),var(--blue));border:none;color:white;font-family:var(--font-accent);font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:16px;cursor:pointer;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));transition:opacity 0.3s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+      Iniciar Sesión
+    </button>
+    <div style="text-align:center;margin-top:20px;font-size:12px;color:var(--gray);font-family:var(--font-accent);letter-spacing:1px;">
+      Acceso solo para personal IMPEL autorizado
+    </div>
+  </div>
+</div>
 
-  // ── INTERSECTION OBSERVER (fade-in) ──
-  const fadeEls = document.querySelectorAll('.fade-in');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
-      if (entry.isIntersecting) {
-        setTimeout(() => entry.target.classList.add('visible'), i * 80);
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1 });
-  fadeEls.forEach(el => observer.observe(el));
+<!-- ── ADMIN PANEL ── -->
+<div id="adminPanel" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(8,12,18,0.98);backdrop-filter:blur(20px);overflow-y:auto;">
+  <div style="max-width:900px;margin:0 auto;padding:40px 24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:40px;flex-wrap:wrap;gap:16px;">
+      <div>
+        <div style="font-family:var(--font-display);font-size:36px;font-weight:900;text-transform:uppercase;letter-spacing:2px;">Panel <span style="color:var(--orange);">Admin</span></div>
+        <div id="adminWelcome" style="font-family:var(--font-accent);font-size:12px;letter-spacing:2px;color:var(--gray);text-transform:uppercase;margin-top:4px;"></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div style="font-family:var(--font-accent);font-size:11px;letter-spacing:2px;color:var(--orange);text-transform:uppercase;padding:8px 16px;border:1px solid rgba(245,101,0,0.3);border-radius:4px;" id="adminRoleBadge">Admin</div>
+        <button onclick="doLogout()" style="font-family:var(--font-accent);font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#f87171;padding:8px 18px;cursor:pointer;border-radius:4px;transition:all 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">Cerrar Sesión</button>
+      </div>
+    </div>
 
-  // ── SMOOTH ACTIVE NAV ──
-  const sections = document.querySelectorAll('section[id]');
-  const navLinks = document.querySelectorAll('.nav-links a');
-  window.addEventListener('scroll', () => {
-    let current = '';
-    sections.forEach(s => {
-      if (window.scrollY >= s.offsetTop - 100) current = s.id;
-    });
-    navLinks.forEach(a => {
-      a.style.color = a.getAttribute('href') === '#' + current ? 'var(--white)' : '';
-    });
-  });
+    <!-- Estadísticas -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:40px;" id="adminStats"></div>
 
-  // ── CONTACT FORM ──
-  function handleFormSubmit() {
-    document.getElementById('contactForm').style.display = 'none';
-    document.getElementById('formSuccess').style.display = 'block';
-  }
+    <!-- Testimonios -->
+    <div style="background:var(--dark-3);border:1px solid rgba(255,255,255,0.06);padding:28px;border-radius:4px;margin-bottom:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <div style="font-family:var(--font-display);font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Gestión de Testimonios</div>
+        <button onclick="adminLoadTestimonios()" style="font-family:var(--font-accent);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(10,78,255,0.1);border:1px solid rgba(10,78,255,0.2);color:var(--blue-light);padding:8px 16px;cursor:pointer;border-radius:4px;">↺ Actualizar</button>
+      </div>
+      <div id="adminTestiList" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="text-align:center;padding:24px;color:var(--gray);font-family:var(--font-accent);font-size:13px;letter-spacing:1px;">Cargando testimonios...</div>
+      </div>
+    </div>
 
-  // ── TESTIMONIALS CAROUSEL ──
-  const STORAGE_KEY = 'impel_testimonios_v1';
-
-  function getTestimonios() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch(e) {}
-    return [];
-  }
-
-  function saveTestimonios(arr) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); } catch(e) {}
-  }
-
-  const defaultTestimonios = [
-    { name: 'Laura Ramírez', vehicle: 'Kia Sportage 2021', rating: 5, text: 'Excelente servicio. El diagnóstico fue rápido y acertado. Recomiendo totalmente a IMPEL para cualquier problema eléctrico de su vehículo.' },
-    { name: 'Ernesto Sánchez', vehicle: 'Toyota Hilux 2018', rating: 5, text: 'El equipo de IMPEL es muy profesional. Resolvieron el problema de mi motor de arranque el mismo día. Precios justos y honestidad total.' },
-    { name: 'Patricia Mora', vehicle: 'Honda CR-V 2020', rating: 5, text: 'Llegaron a atender mi emergencia en carretera muy rápido. Equipo muy capacitado y amable. ¡Definitivamente los llamo la próxima vez!' },
-    { name: 'Rodrigo Castillo', vehicle: 'Flota Hyundai — 4 unidades', rating: 5, text: 'Trabajo con IMPEL para mantener mi flota en óptimas condiciones. Son confiables, puntuales y con precios competitivos. Mi socio de confianza.' },
-  ];
-
-  let allTestimonios = [...defaultTestimonios, ...getTestimonios()];
-  let testiPage = 0;
-  const PER_PAGE = 3;
-
-  function starsSVG(n) {
-    return Array.from({length: 5}, (_, i) =>
-      `<svg width="13" height="13" viewBox="0 0 24 24" fill="${i < n ? '#F56500' : 'rgba(255,255,255,0.15)'}"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`
-    ).join('');
-  }
-
-  function initials(name) {
-    return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-  }
-
-  function renderTestiCarousel() {
-    const carousel = document.getElementById('testiCarousel');
-    const dotsEl = document.getElementById('testiDots');
-    if (!carousel || !dotsEl) return;
-    const total = allTestimonios.length;
-    const pageCount = Math.ceil(total / PER_PAGE);
-    testiPage = Math.min(testiPage, pageCount - 1);
-    const startIdx = testiPage * PER_PAGE;
-    const slice = allTestimonios.slice(startIdx, startIdx + PER_PAGE);
-
-    carousel.innerHTML = slice.map(t => `
-      <div class="testi-card-new active">
-        <div class="testi-accent-bar"></div>
-        <div class="testi-header">
-          <div class="testi-quote-icon">"</div>
-          <div class="testi-rating">${starsSVG(t.rating)}</div>
+    <!-- Agregar testimonio manual -->
+    <div style="background:var(--dark-4);border:1px solid rgba(10,78,255,0.15);padding:28px;border-radius:4px;position:relative;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--orange));border-radius:4px 4px 0 0;"></div>
+      <div style="font-family:var(--font-display);font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:20px;">Agregar Testimonio Manual</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div>
+          <label style="display:block;font-family:var(--font-accent);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:8px;">Nombre</label>
+          <input id="adminTsName" type="text" placeholder="Nombre del cliente" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--white);font-family:var(--font-body);font-size:14px;padding:11px 14px;border-radius:4px;outline:none;">
         </div>
-        <p class="testi-body">${t.text}</p>
-        <div class="testi-footer-row">
-          <div class="testi-avatar-new">${initials(t.name)}</div>
-          <div>
-            <div class="testi-name-new">${t.name}</div>
-            <div class="testi-vehicle-new">${t.vehicle}</div>
-          </div>
+        <div>
+          <label style="display:block;font-family:var(--font-accent);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:8px;">Vehículo</label>
+          <input id="adminTsVehicle" type="text" placeholder="Ej: Toyota Corolla 2020" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--white);font-family:var(--font-body);font-size:14px;padding:11px 14px;border-radius:4px;outline:none;">
         </div>
       </div>
-    `).join('');
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-family:var(--font-accent);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:8px;">Testimonio</label>
+        <textarea id="adminTsText" placeholder="Texto del testimonio..." style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--white);font-family:var(--font-body);font-size:14px;padding:11px 14px;border-radius:4px;outline:none;min-height:80px;resize:vertical;"></textarea>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div style="display:flex;gap:4px;" id="adminStarSelect">
+          <button class="testi-star-btn selected" onclick="adminSelectStar(1)">★</button>
+          <button class="testi-star-btn selected" onclick="adminSelectStar(2)">★</button>
+          <button class="testi-star-btn selected" onclick="adminSelectStar(3)">★</button>
+          <button class="testi-star-btn selected" onclick="adminSelectStar(4)">★</button>
+          <button class="testi-star-btn selected" onclick="adminSelectStar(5)">★</button>
+        </div>
+        <button onclick="adminAddTestimony()" style="font-family:var(--font-accent);font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:var(--orange);border:none;color:white;padding:12px 24px;cursor:pointer;border-radius:4px;">+ Publicar Testimonio</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-    dotsEl.innerHTML = Array.from({length: pageCount}, (_, i) =>
-      `<div class="testi-dot${i === testiPage ? ' active' : ''}" onclick="goToTestiPage(${i})"></div>`
-    ).join('');
+<!-- ── USER BADGE en NAVBAR (se inserta por JS) ── -->
+<style>
+  #userBadgeNav {
+    display:none;
+    align-items:center;
+    gap:10px;
+    font-family:var(--font-accent);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--orange);
+    cursor:pointer;
+    padding:8px 14px;
+    border:1px solid rgba(245,101,0,0.25);
+    border-radius:4px;
+    transition:all 0.3s;
+    background:rgba(245,101,0,0.06);
+  }
+  #userBadgeNav:hover { background:rgba(245,101,0,0.12); }
+  #loginNavBtn {
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--font-accent);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--gray);
+    background:none;
+    border:1px solid rgba(255,255,255,0.1);
+    padding:8px 16px;
+    cursor:pointer;
+    border-radius:4px;
+    transition:all 0.3s;
+    margin-left:8px;
+  }
+  #loginNavBtn:hover { color:var(--white);border-color:rgba(245,101,0,0.3);background:rgba(245,101,0,0.06); }
+
+  /* Premium shop card hover glow */
+  .shop-card:hover { box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 0 1px rgba(245,101,0,0.15); }
+  
+  /* Cart side panel - slide in from right */
+  #cartSidePanel {
+    position:fixed;top:0;right:-420px;width:400px;max-width:95vw;height:100vh;
+    background:var(--dark-3);border-left:1px solid rgba(245,101,0,0.15);
+    z-index:1500;overflow-y:auto;transition:right 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    padding:0;
+    display:flex;flex-direction:column;
+  }
+  #cartSidePanel.open { right:0; }
+  #cartOverlay {
+    position:fixed;inset:0;background:rgba(8,12,18,0.7);z-index:1499;
+    opacity:0;pointer-events:none;transition:opacity 0.3s;backdrop-filter:blur(4px);
+  }
+  #cartOverlay.open { opacity:1;pointer-events:all; }
+
+  .cart-side-header {
+    padding:24px 24px 20px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    position:sticky;top:0;
+    background:var(--dark-3);z-index:1;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .cart-side-title { font-family:var(--font-display);font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px; }
+  .cart-side-close { background:none;border:none;color:var(--gray);cursor:pointer;font-size:22px;line-height:1;padding:4px;transition:color 0.2s; }
+  .cart-side-close:hover { color:var(--white); }
+  .cart-side-items { padding:20px 24px;flex:1; }
+  .cart-side-footer { padding:20px 24px;border-top:1px solid rgba(255,255,255,0.06);background:var(--dark-3); position:sticky;bottom:0; }
+
+  /* AI chat bubble in cart */
+  .cart-ai-bubble {
+    background:rgba(10,78,255,0.08);border:1px solid rgba(10,78,255,0.15);
+    border-radius:8px;padding:14px 16px;margin-bottom:16px;
+    font-size:13px;color:var(--gray);line-height:1.6;
+    position:relative;
+  }
+  .cart-ai-bubble::before {
+    content:'🤖';position:absolute;top:-10px;left:14px;
+    font-size:18px;background:var(--dark-3);padding:0 4px;
+  }
+  .cart-ai-thinking {
+    display:flex;align-items:center;gap:6px;
+    font-family:var(--font-accent);font-size:11px;letter-spacing:2px;color:var(--blue-light);text-transform:uppercase;
+  }
+  .ai-dot { width:6px;height:6px;border-radius:50%;background:var(--blue-light);animation:aiPulse 1.2s ease-in-out infinite; }
+  .ai-dot:nth-child(2) { animation-delay:0.2s; }
+  .ai-dot:nth-child(3) { animation-delay:0.4s; }
+  @keyframes aiPulse { 0%,100%{opacity:0.2;transform:scale(0.8);}50%{opacity:1;transform:scale(1.1);} }
+
+  /* Floating cart button - premium */
+  .cart-fab {
+    position:fixed;bottom:90px;right:20px;z-index:1200;
+    background:linear-gradient(135deg,var(--orange),#c04e00);
+    border:none;border-radius:50%;width:58px;height:58px;
+    display:none;align-items:center;justify-content:center;
+    color:white;cursor:pointer;
+    box-shadow:0 4px 24px rgba(245,101,0,0.5),0 0 0 4px rgba(245,101,0,0.1);
+    transition:all 0.3s;animation:cartFabIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes cartFabIn { from{opacity:0;transform:scale(0.4);}to{opacity:1;transform:scale(1);} }
+  .cart-fab:hover { transform:scale(1.08);box-shadow:0 8px 32px rgba(245,101,0,0.6); }
+  .cart-fab-badge {
+    position:absolute;top:-4px;right:-4px;
+    background:#25D366;color:white;border:2.5px solid var(--dark);
+    font-size:10px;font-weight:800;width:22px;height:22px;
+    border-radius:50%;display:flex;align-items:center;justify-content:center;
   }
 
-  function goToTestiPage(p) {
-    testiPage = p;
-    renderTestiCarousel();
-  }
-  function testiPrev() {
-    const pageCount = Math.ceil(allTestimonios.length / PER_PAGE);
-    testiPage = (testiPage - 1 + pageCount) % pageCount;
-    renderTestiCarousel();
-  }
-  function testiNext() {
-    const pageCount = Math.ceil(allTestimonios.length / PER_PAGE);
-    testiPage = (testiPage + 1) % pageCount;
-    renderTestiCarousel();
-  }
+  /* Premium testi card */
+  .testi-card-new { cursor:default; }
+  .testi-card-new:hover { box-shadow:0 16px 48px rgba(0,0,0,0.4); transform:translateY(-4px); }
+</style>
 
-  // Auto-advance testimonials
-  let testiAutoTimer = setInterval(testiNext, 6000);
-  document.addEventListener('click', e => {
-    if (e.target.closest('#testiCarousel, .testi-controls')) {
-      clearInterval(testiAutoTimer);
+<!-- Cart side panel HTML -->
+<div id="cartOverlay" onclick="closeCartPanel()"></div>
+<div id="cartSidePanel">
+  <div class="cart-side-header">
+    <div>
+      <div class="cart-side-title">Tu <span style="color:var(--orange)">Pedido</span></div>
+      <div id="cartSideCount" style="font-family:var(--font-accent);font-size:11px;letter-spacing:2px;color:var(--gray);text-transform:uppercase;margin-top:2px;">0 productos</div>
+    </div>
+    <button class="cart-side-close" onclick="closeCartPanel()">✕</button>
+  </div>
+  <div class="cart-side-items" id="cartSideItems">
+    <div style="text-align:center;padding:40px 0;color:var(--gray);font-family:var(--font-accent);font-size:13px;letter-spacing:1px;">Tu carrito está vacío</div>
+  </div>
+  <div class="cart-side-footer">
+    <!-- AI Message -->
+    <div id="cartAIBox" class="cart-ai-bubble" style="display:none;"></div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-family:var(--font-accent);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gray);">Total Estimado</div>
+      <div id="cartSideTotal" style="font-family:var(--font-display);font-size:30px;font-weight:900;color:var(--orange);">$0</div>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-family:var(--font-accent);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:6px;">Nota adicional</label>
+      <textarea id="cartNoteNew" placeholder="Marca, modelo, año, síntoma del vehículo..." style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:var(--white);font-size:13px;padding:10px 12px;border-radius:4px;resize:vertical;min-height:70px;font-family:var(--font-body);outline:none;" onfocus="this.style.borderColor='rgba(245,101,0,0.3)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'"></textarea>
+    </div>
+    <button id="cartWaNewBtn" onclick="sendToWhatsAppNew()" style="width:100%;padding:16px;background:linear-gradient(135deg,#25D366,#128C7E);border:none;color:white;font-family:var(--font-accent);font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.3s;margin-bottom:8px;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+      <span id="cartWaNewBtnText">Generar pedido con IA → WhatsApp</span>
+    </button>
+    <button onclick="clearCartNew()" style="width:100%;padding:10px;background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--gray);font-family:var(--font-accent);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:4px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(239,68,68,0.3)';this.style.color='#f87171'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.color='var(--gray)'">Vaciar Carrito</button>
+  </div>
+</div>
+
+<!-- FAB carrito -->
+<button class="cart-fab" id="cartFab" onclick="openCartPanel()">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.99 1.61H19a2 2 0 001.96-1.63L23 6H6"/></svg>
+  <div class="cart-fab-badge" id="cartFabBadge">0</div>
+</button>
+
+<script>
+// ══════════════════════════════════════════
+//  CONFIGURACIÓN DE USUARIOS
+// ══════════════════════════════════════════
+const USERS = [
+  { username: 'admin',   password: 'impel2024',  role: 'Administrador', name: 'Administrador IMPEL' },
+  { username: 'ventas',  password: 'ventas123',  role: 'Ventas',        name: 'Equipo de Ventas'    },
+  { username: 'tecnico', password: 'tecnico123', role: 'Técnico',       name: 'Técnico IMPEL'       }
+];
+
+// Clave API almacenada de forma segura (solo para uso en artifacts/demo)
+const ANTHROPIC_KEY = 'anthropic-key-placeholder'; // Reemplazar con clave real vía env
+
+// ══════════════════════════════════════════
+//  NAVBAR SCROLL
+// ══════════════════════════════════════════
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// ── MOBILE MENU ──
+const menuToggle = document.getElementById('menuToggle');
+const mobileMenu = document.getElementById('mobileMenu');
+menuToggle.addEventListener('click', () => mobileMenu.classList.toggle('open'));
+mobileMenu.querySelectorAll('a').forEach(a => {
+  a.addEventListener('click', () => mobileMenu.classList.remove('open'));
+});
+
+// ── FADE IN ──
+const fadeEls = document.querySelectorAll('.fade-in');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      observer.unobserve(entry.target);
     }
   });
+}, { threshold: 0.1 });
+fadeEls.forEach(el => observer.observe(el));
 
-  // Star selection
-  let selectedStars = 5;
-  selectStar(5);
-  function selectStar(val) {
-    selectedStars = val;
-    document.querySelectorAll('.testi-star-btn').forEach((btn, i) => {
-      btn.classList.toggle('selected', i < val);
-    });
+// ── ACTIVE NAV ──
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) current = s.id; });
+  navLinks.forEach(a => { a.style.color = a.getAttribute('href') === '#' + current ? 'var(--white)' : ''; });
+});
+
+// ── CONTACT FORM ──
+function handleFormSubmit() {
+  document.getElementById('contactForm').style.display = 'none';
+  document.getElementById('formSuccess').style.display = 'block';
+}
+
+// ══════════════════════════════════════════
+//  LOGIN SYSTEM
+// ══════════════════════════════════════════
+let currentUser = null;
+
+function injectLoginBtn() {
+  const navLinksEl = document.querySelector('.nav-links');
+  if (!navLinksEl) return;
+  // Badge de usuario logueado
+  const badge = document.createElement('div');
+  badge.id = 'userBadgeNav';
+  badge.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span id="userBadgeName">Admin</span>`;
+  badge.onclick = () => openAdminPanel();
+  navLinksEl.appendChild(badge);
+  // Botón login
+  const loginBtn = document.createElement('button');
+  loginBtn.id = 'loginNavBtn';
+  loginBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Acceso`;
+  loginBtn.onclick = () => openLogin();
+  navLinksEl.appendChild(loginBtn);
+  updateAuthUI();
+}
+
+function openLogin() {
+  const modal = document.getElementById('loginModal');
+  modal.style.display = 'flex';
+  setTimeout(() => document.getElementById('loginUser').focus(), 100);
+}
+function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value.trim();
+  const found = USERS.find(x => x.username === u && x.password === p);
+  if (found) {
+    currentUser = found;
+    closeLogin();
+    updateAuthUI();
+    if (found.role === 'Administrador') openAdminPanel();
+  } else {
+    const err = document.getElementById('loginError');
+    err.style.display = 'block';
+    setTimeout(() => err.style.display = 'none', 3000);
   }
+}
 
-  function submitTestimony() {
-    const name = document.getElementById('tsName').value.trim();
-    const vehicle = document.getElementById('tsVehicle').value.trim();
-    const text = document.getElementById('tsText').value.trim();
-    if (!name || !text) {
-      alert('Por favor completa tu nombre y testimonio.');
-      return;
-    }
-    const newT = { name, vehicle: vehicle || 'Cliente IMPEL', rating: selectedStars, text };
-    const saved = getTestimonios();
-    saved.push(newT);
-    saveTestimonios(saved);
-    allTestimonios = [...defaultTestimonios, ...saved];
+function doLogout() {
+  currentUser = null;
+  updateAuthUI();
+  document.getElementById('adminPanel').style.display = 'none';
+}
 
-    // Show success
-    document.getElementById('testiFormWrap').style.display = 'none';
-    document.getElementById('tsSuccess').style.display = 'block';
-
-    // Go to last page to show the new testimonial
-    testiPage = Math.ceil(allTestimonios.length / PER_PAGE) - 1;
-    renderTestiCarousel();
-
-    // Reset after 4s
-    setTimeout(() => {
-      document.getElementById('testiFormWrap').style.display = 'block';
-      document.getElementById('tsSuccess').style.display = 'none';
-      document.getElementById('tsName').value = '';
-      document.getElementById('tsVehicle').value = '';
-      document.getElementById('tsText').value = '';
-      selectStar(5);
-    }, 4000);
+function updateAuthUI() {
+  const badge = document.getElementById('userBadgeNav');
+  const loginBtn = document.getElementById('loginNavBtn');
+  if (!badge || !loginBtn) return;
+  if (currentUser) {
+    badge.style.display = 'flex';
+    document.getElementById('userBadgeName').textContent = currentUser.role;
+    loginBtn.style.display = 'none';
+  } else {
+    badge.style.display = 'none';
+    loginBtn.style.display = 'inline-flex';
   }
+}
 
-  // Init on load
+function openAdminPanel() {
+  if (!currentUser) { openLogin(); return; }
+  const panel = document.getElementById('adminPanel');
+  panel.style.display = 'block';
+  document.getElementById('adminWelcome').textContent = `Bienvenido, ${currentUser.name}`;
+  document.getElementById('adminRoleBadge').textContent = currentUser.role;
+  renderAdminStats();
+  adminLoadTestimonios();
+}
+
+// ══════════════════════════════════════════
+//  TESTIMONIOS — ALMACENAMIENTO COMPARTIDO
+//  Usa window.storage (persistent storage de Claude)
+//  Con fallback a localStorage para uso fuera de Claude
+// ══════════════════════════════════════════
+const TESTI_KEY = 'impel_testimonios_shared_v3';
+
+// Testimonios fijos de empresa
+const FIXED_TESTIMONIOS = [
+  { id:'f1', name:'Jorge Rodríguez', vehicle:'Toyota Corolla 2019', rating:5, text:'Después de mucho buscar un electromecánico serio, honrado y responsable, encontré este tesoro escondido. El electromecánico es un as y la señora que vende los repuestos con esa amabilidad hacen que a uno se le olvide el mal rato por estar varado.', fixed:true },
+  { id:'f2', name:'María Mercedes', vehicle:'Honda Civic 2017', rating:5, text:'Quedé varada en la autopista a las 10 de la noche. Llamé a IMPEL y en 40 minutos ya estaban allá. El alternador había muerto. Lo resolvieron en el sitio mismo. Profesionalismo total.', fixed:true },
+  { id:'f3', name:'Carlos Fonseca', vehicle:'Flota Comercial — Pickup Ford', rating:5, text:'Mantengo una flota de 8 vehículos. IMPEL es ahora mi servicio de confianza para todo lo eléctrico. Precios honestos, diagnóstico transparente y trabajo garantizado. Los recomiendo sin reservas.', fixed:true }
+];
+
+async function getTestimoniosShared() {
+  // Intentar storage compartido (Claude artifacts)
+  if (window.storage) {
+    try {
+      const res = await window.storage.get(TESTI_KEY, true);
+      if (res && res.value) {
+        const parsed = JSON.parse(res.value);
+        return [...FIXED_TESTIMONIOS, ...parsed];
+      }
+    } catch(e) {}
+  }
+  // Fallback: localStorage
+  try {
+    const ls = localStorage.getItem(TESTI_KEY);
+    if (ls) return [...FIXED_TESTIMONIOS, ...JSON.parse(ls)];
+  } catch(e) {}
+  return [...FIXED_TESTIMONIOS];
+}
+
+async function saveTestimoniosShared(userTestimonios) {
+  const str = JSON.stringify(userTestimonios);
+  if (window.storage) {
+    try { await window.storage.set(TESTI_KEY, str, true); } catch(e) {}
+  }
+  try { localStorage.setItem(TESTI_KEY, str); } catch(e) {}
+}
+
+async function getUserTestimonios() {
+  if (window.storage) {
+    try {
+      const res = await window.storage.get(TESTI_KEY, true);
+      if (res && res.value) return JSON.parse(res.value);
+    } catch(e) {}
+  }
+  try {
+    const ls = localStorage.getItem(TESTI_KEY);
+    if (ls) return JSON.parse(ls);
+  } catch(e) {}
+  return [];
+}
+
+// ══════════════════════════════════════════
+//  CAROUSEL TESTIMONIOS
+// ══════════════════════════════════════════
+let allTestimonios = [...FIXED_TESTIMONIOS];
+let testiPage = 0;
+const PER_PAGE = 3;
+
+function starsSVG(n) {
+  return Array.from({length: 5}, (_, i) =>
+    `<svg width="13" height="13" viewBox="0 0 24 24" fill="${i < n ? '#F56500' : 'rgba(255,255,255,0.15)'}"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`
+  ).join('');
+}
+
+function initials(name) {
+  return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function renderTestiCarousel() {
+  const carousel = document.getElementById('testiCarousel');
+  const dotsEl = document.getElementById('testiDots');
+  if (!carousel || !dotsEl) return;
+  const total = allTestimonios.length;
+  if (total === 0) {
+    carousel.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);font-family:var(--font-accent);letter-spacing:1px;font-size:14px;">Sé el primero en dejar tu opinión ↓</div>';
+    dotsEl.innerHTML = ''; return;
+  }
+  const pageCount = Math.ceil(total / PER_PAGE);
+  testiPage = Math.min(testiPage, pageCount - 1);
+  const startIdx = testiPage * PER_PAGE;
+  const slice = allTestimonios.slice(startIdx, startIdx + PER_PAGE);
+  carousel.innerHTML = slice.map(t => `
+    <div class="testi-card-new active">
+      <div class="testi-accent-bar"></div>
+      <div class="testi-header">
+        <div class="testi-quote-icon">"</div>
+        <div class="testi-rating">${starsSVG(t.rating)}</div>
+      </div>
+      <p class="testi-body">${t.text}</p>
+      <div class="testi-footer-row">
+        <div class="testi-avatar-new">${initials(t.name)}</div>
+        <div>
+          <div class="testi-name-new">${t.name}</div>
+          <div class="testi-vehicle-new">${t.vehicle}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  dotsEl.innerHTML = Array.from({length: pageCount}, (_, i) =>
+    `<div class="testi-dot${i === testiPage ? ' active' : ''}" onclick="goToTestiPage(${i})"></div>`
+  ).join('');
+}
+
+async function loadAndRenderTestimonios() {
+  allTestimonios = await getTestimoniosShared();
   renderTestiCarousel();
+}
+
+function goToTestiPage(p) { testiPage = p; renderTestiCarousel(); }
+function testiPrev() {
+  const pc = Math.ceil(allTestimonios.length / PER_PAGE);
+  testiPage = (testiPage - 1 + pc) % pc;
+  renderTestiCarousel();
+}
+function testiNext() {
+  if (allTestimonios.length === 0) return;
+  const pc = Math.ceil(allTestimonios.length / PER_PAGE);
+  testiPage = (testiPage + 1) % pc;
+  renderTestiCarousel();
+}
+
+let testiAutoTimer = setInterval(testiNext, 7000);
+document.addEventListener('click', e => {
+  if (e.target.closest('#testiCarousel, .testi-controls')) clearInterval(testiAutoTimer);
+});
+
+// Star selection para form de usuario
+let selectedStars = 5;
+function selectStar(val) {
+  selectedStars = val;
+  document.querySelectorAll('.testi-star-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', i < val);
+  });
+}
+
+async function submitTestimony() {
+  const name = document.getElementById('tsName').value.trim();
+  const vehicle = document.getElementById('tsVehicle').value.trim();
+  const text = document.getElementById('tsText').value.trim();
+  if (!name || !text) { alert('Por favor completa tu nombre y testimonio.'); return; }
+
+  const newT = {
+    id: 'u_' + Date.now(),
+    name, vehicle: vehicle || 'Cliente IMPEL',
+    rating: selectedStars, text,
+    date: new Date().toISOString()
+  };
+
+  const existing = await getUserTestimonios();
+  existing.push(newT);
+  await saveTestimoniosShared(existing);
+
+  allTestimonios = await getTestimoniosShared();
+  testiPage = Math.ceil(allTestimonios.length / PER_PAGE) - 1;
+  renderTestiCarousel();
+
+  document.getElementById('testiFormWrap').style.display = 'none';
+  document.getElementById('tsSuccess').style.display = 'block';
+
+  setTimeout(() => {
+    document.getElementById('testiFormWrap').style.display = 'block';
+    document.getElementById('tsSuccess').style.display = 'none';
+    document.getElementById('tsName').value = '';
+    document.getElementById('tsVehicle').value = '';
+    document.getElementById('tsText').value = '';
+    selectStar(5);
+  }, 4000);
+}
+
+// ══════════════════════════════════════════
+//  ADMIN — GESTIÓN DE TESTIMONIOS
+// ══════════════════════════════════════════
+let adminSelectedStars = 5;
+
+function adminSelectStar(val) {
+  adminSelectedStars = val;
+  document.querySelectorAll('#adminStarSelect .testi-star-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', i < val);
+  });
+}
+
+async function adminLoadTestimonios() {
+  const list = document.getElementById('adminTestiList');
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray);font-family:var(--font-accent);font-size:12px;letter-spacing:1px;">Cargando...</div>';
+  const all = await getTestimoniosShared();
+  if (all.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray);font-family:var(--font-accent);font-size:12px;">Sin testimonios aún</div>';
+    return;
+  }
+  list.innerHTML = all.map(t => `
+    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);padding:16px 18px;border-radius:4px;display:flex;align-items:flex-start;gap:14px;">
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--white);">${t.name}</span>
+          <span style="font-family:var(--font-accent);font-size:10px;letter-spacing:1px;color:var(--gray);">${t.vehicle}</span>
+          ${t.fixed ? '<span style="font-family:var(--font-accent);font-size:9px;letter-spacing:1px;background:rgba(245,101,0,0.15);color:var(--orange);padding:2px 8px;border-radius:2px;">FIJO</span>' : '<span style="font-family:var(--font-accent);font-size:9px;letter-spacing:1px;background:rgba(34,197,94,0.15);color:#4ade80;padding:2px 8px;border-radius:2px;">USUARIO</span>'}
+        </div>
+        <div style="font-size:13px;color:var(--gray);line-height:1.5;margin-bottom:6px;">${t.text}</div>
+        <div style="display:flex;gap:2px;">${starsSVG(t.rating)}</div>
+      </div>
+      ${!t.fixed ? `<button onclick="adminDeleteTestimony('${t.id}')" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#f87171;font-family:var(--font-accent);font-size:11px;font-weight:700;letter-spacing:1px;padding:6px 12px;cursor:pointer;border-radius:4px;flex-shrink:0;transition:all 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">Eliminar</button>` : ''}
+    </div>
+  `).join('');
+}
+
+async function adminDeleteTestimony(id) {
+  const existing = await getUserTestimonios();
+  const filtered = existing.filter(t => t.id !== id);
+  await saveTestimoniosShared(filtered);
+  allTestimonios = await getTestimoniosShared();
+  renderTestiCarousel();
+  adminLoadTestimonios();
+}
+
+async function adminAddTestimony() {
+  const name = document.getElementById('adminTsName').value.trim();
+  const vehicle = document.getElementById('adminTsVehicle').value.trim();
+  const text = document.getElementById('adminTsText').value.trim();
+  if (!name || !text) { alert('Nombre y testimonio son requeridos.'); return; }
+  const newT = {
+    id: 'a_' + Date.now(),
+    name, vehicle: vehicle || 'Cliente IMPEL',
+    rating: adminSelectedStars, text,
+    date: new Date().toISOString()
+  };
+  const existing = await getUserTestimonios();
+  existing.push(newT);
+  await saveTestimoniosShared(existing);
+  allTestimonios = await getTestimoniosShared();
+  renderTestiCarousel();
+  adminLoadTestimonios();
+  document.getElementById('adminTsName').value = '';
+  document.getElementById('adminTsVehicle').value = '';
+  document.getElementById('adminTsText').value = '';
+}
+
+function renderAdminStats() {
+  const statsEl = document.getElementById('adminStats');
+  const stats = [
+    { num: allTestimonios.length, label: 'Testimonios Totales', color: 'var(--orange)' },
+    { num: '4500+', label: 'Vehículos Atendidos', color: 'var(--blue-light)' },
+    { num: '12+', label: 'Años de Experiencia', color: 'var(--orange)' },
+    { num: '24/7', label: 'Disponibilidad', color: 'var(--blue-light)' }
+  ];
+  statsEl.innerHTML = stats.map(s => `
+    <div style="background:var(--dark-3);border:1px solid rgba(255,255,255,0.06);padding:24px;border-radius:4px;text-align:center;">
+      <div style="font-family:var(--font-display);font-size:36px;font-weight:900;color:${s.color};line-height:1;">${s.num}</div>
+      <div style="font-family:var(--font-accent);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-top:8px;">${s.label}</div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
+//  CARRITO — NUEVO SISTEMA PREMIUM
+// ══════════════════════════════════════════
+let cart = [];
+
+function addToCart(id, name, price, desc) {
+  const existing = cart.find(i => i.id === id);
+  if (existing) {
+    existing.qty = (existing.qty || 1) + 1;
+  } else {
+    cart.push({ id, name, price, desc, qty: 1 });
+  }
+  updateCartUI();
+  // Actualizar botón en la tarjeta del producto
+  const btn = document.querySelector(`[data-id="${id}"] .shop-add-btn`);
+  if (btn) {
+    btn.classList.add('added');
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Agregado`;
+    setTimeout(() => {
+      btn.classList.remove('added');
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Agregar`;
+    }, 2000);
+  }
+  // Abrir panel si primer item
+  if (cart.length === 1) openCartPanel();
+  // Actualizar AI suggestion
+  updateCartAISuggestion();
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(i => i.id !== id);
+  updateCartUI();
+  updateCartAISuggestion();
+}
+
+function clearCartNew() {
+  cart = [];
+  updateCartUI();
+  document.getElementById('cartAIBox').style.display = 'none';
+}
+
+function updateCartUI() {
+  const count = cart.reduce((s, i) => s + (i.qty || 1), 0);
+  const total = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+
+  // Side panel
+  document.getElementById('cartSideCount').textContent = `${count} producto${count !== 1 ? 's' : ''}`;
+  document.getElementById('cartSideTotal').textContent = `$${total}`;
+
+  // FAB
+  const fab = document.getElementById('cartFab');
+  const fabBadge = document.getElementById('cartFabBadge');
+  if (count > 0) {
+    fab.style.display = 'flex';
+    fabBadge.textContent = count;
+  } else {
+    fab.style.display = 'none';
+  }
+
+  // Items list
+  const itemsEl = document.getElementById('cartSideItems');
+  if (cart.length === 0) {
+    itemsEl.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--gray);font-family:var(--font-accent);font-size:13px;letter-spacing:1px;">Tu carrito está vacío</div>';
+    return;
+  }
+  itemsEl.innerHTML = cart.map(item => `
+    <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:12px 14px;border-radius:4px;margin-bottom:10px;animation:fadeIn 0.3s ease;">
+      <div style="width:36px;height:36px;background:rgba(245,101,0,0.1);border:1px solid rgba(245,101,0,0.15);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.99 1.61H19a2 2 0 001.96-1.63L23 6H6"/></svg>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:var(--font-display);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.name}</div>
+        <div style="font-size:11px;color:var(--gray);margin-top:2px;">${item.desc}</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+          <button onclick="changeQty(${item.id},-1)" style="background:rgba(255,255,255,0.06);border:none;color:var(--white);width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">−</button>
+          <span style="font-family:var(--font-accent);font-size:12px;font-weight:700;min-width:16px;text-align:center;">${item.qty || 1}</span>
+          <button onclick="changeQty(${item.id},1)" style="background:rgba(255,255,255,0.06);border:none;color:var(--white);width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">+</button>
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-family:var(--font-display);font-size:16px;font-weight:800;color:var(--orange);">$${item.price * (item.qty || 1)}</div>
+        <button onclick="removeFromCart(${item.id})" style="background:none;border:none;color:rgba(239,68,68,0.5);cursor:pointer;font-size:18px;margin-top:4px;line-height:1;transition:color 0.2s;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='rgba(239,68,68,0.5)'">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+  item.qty = Math.max(1, (item.qty || 1) + delta);
+  updateCartUI();
+  updateCartAISuggestion();
+}
+
+function openCartPanel() {
+  document.getElementById('cartSidePanel').classList.add('open');
+  document.getElementById('cartOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCartPanel() {
+  document.getElementById('cartSidePanel').classList.remove('open');
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── Compatibilidad con botones viejos ──
+function toggleCartPanel() { openCartPanel(); }
+function sendToWhatsApp() { sendToWhatsAppNew(); }
+function clearCart() { clearCartNew(); }
+
+// ══════════════════════════════════════════
+//  IA — SUGERENCIA AUTOMÁTICA EN CARRITO
+// ══════════════════════════════════════════
+let aiSuggestionTimeout = null;
+
+function updateCartAISuggestion() {
+  if (cart.length === 0) return;
+  clearTimeout(aiSuggestionTimeout);
+  const aiBox = document.getElementById('cartAIBox');
+  aiBox.style.display = 'block';
+  aiBox.innerHTML = `<div class="cart-ai-thinking"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div><span style="margin-left:4px;">IA analizando tu pedido...</span></div>`;
+
+  aiSuggestionTimeout = setTimeout(async () => {
+    const items = cart.map(i => `- ${i.name} (x${i.qty || 1}) — $${i.price * (i.qty || 1)}`).join('\n');
+    const total = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+    const prompt = `Eres el asistente de IMPEL Electromecánica en Panamá. El cliente tiene en su carrito:\n${items}\nTotal: $${total}\n\nDa una sugerencia corta (máx 2 oraciones) sobre si este pedido tiene sentido o si habría que agregar algo complementario. Responde en español, tono profesional amigable, SIN markdown.`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 150,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.find(c => c.type === 'text')?.text || '';
+      aiBox.innerHTML = text || 'Tu pedido se ve completo. ¡Listo para enviar!';
+    } catch(e) {
+      aiBox.innerHTML = 'Pedido listo para enviar vía WhatsApp. Nuestro equipo te contactará de inmediato.';
+    }
+  }, 1500);
+}
+
+// ── GENERAR MENSAJE IA Y ENVIAR A WA ──
+async function sendToWhatsAppNew() {
+  if (cart.length === 0) { alert('Agrega al menos un producto antes de continuar.'); return; }
+  const btn = document.getElementById('cartWaNewBtn');
+  const btnText = document.getElementById('cartWaNewBtnText');
+  btn.disabled = true;
+  btnText.innerHTML = `<div class="cart-ai-thinking" style="color:white;"><div class="ai-dot" style="background:white;"></div><div class="ai-dot" style="background:white;"></div><div class="ai-dot" style="background:white;"></div><span style="margin-left:6px;">Generando pedido con IA...</span></div>`;
+
+  const items = cart.map(i => `- ${i.name} (x${i.qty || 1}) — $${i.price * (i.qty || 1)}`).join('\n');
+  const total = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+  const note = document.getElementById('cartNoteNew').value.trim();
+  const prompt = `Eres el asistente de ventas de IMPEL Electromecánica, Panamá. Genera un mensaje profesional y claro para WhatsApp que incluya:\n1. Saludo breve\n2. Lista de productos/servicios solicitados con precios\n3. Total estimado\n4. Nota del cliente si hay: "${note || 'Sin nota adicional'}"\n5. Cierre pidiendo confirmar disponibilidad\n\nProductos:\n${items}\nTotal: $${total}\n\nRespuesta SOLO el mensaje de WhatsApp, sin explicaciones. Máx 200 palabras. En español.`;
+
+  let message = '';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    message = data.content?.find(c => c.type === 'text')?.text || '';
+  } catch(e) {}
+
+  if (!message) {
+    message = `Hola IMPEL, me gustaría solicitar:\n\n${items}\n\nTotal estimado: $${total}`;
+    if (note) message += `\n\nNota: ${note}`;
+    message += '\n\n¿Podría confirmarme disponibilidad y fecha de atención? Gracias.';
+  }
+
+  btn.disabled = false;
+  btnText.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Generar pedido con IA → WhatsApp`;
+
+  const encoded = encodeURIComponent(message);
+  window.open(`https://wa.me/50762838021?text=${encoded}`, '_blank');
+}
+
+// ── SHOP FILTERS ──
+document.querySelectorAll('.shop-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.shop-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.dataset.cat;
+    document.querySelectorAll('.shop-card').forEach(card => {
+      card.classList.toggle('hidden', cat !== 'all' && card.dataset.cat !== cat);
+    });
+  });
+});
+
+// ══════════════════════════════════════════
+//  INICIALIZACIÓN
+// ══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  // Testimonios
+  await loadAndRenderTestimonios();
+  selectStar(5);
+  // Login botón en nav
+  injectLoginBtn();
+  // Inicializar carrito
+  updateCartUI();
+});
 </script>
 
 <!-- BOTTOM CONTACT BAR (solo móvil) -->
